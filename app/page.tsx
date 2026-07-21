@@ -116,7 +116,7 @@ const seedStudents: Student[] = [
     timeline: [
       { date: "20 jul", title: "Sinais de retomada", detail: "Nova atividade em dois dias distintos; caso segue em monitoramento.", tone: "warm" },
       { date: "18 jul", title: "Entrega concluída", detail: "Exercício de transformação de dados." },
-      { date: "12 jul", title: "Check-in registrado", detail: "Contato manual do mentor; mensagem não enviada pela Vela." },
+      { date: "12 jul", title: "Check-in registrado", detail: "Contato manual do mentor; mensagem não enviada pela Sails." },
     ],
   },
   { id: "ana", name: "Ana Beatriz", initials: "AB", track: "Formação em Dados & IA", progress: 82, score: 88, band: "alta", riskState: "none", lastActivity: "ontem", signals: ["Entregas em dia", "Ritmo consistente"], signalDetails: [{ title: "No ritmo esperado", detail: "Atividade e entregas seguem o plano da trilha.", date: "20 jul" }], suggestion: "Nenhuma ação necessária agora.", message: "", timeline: [{ date: "19 jul", title: "Entrega concluída", detail: "Projeto do módulo 5." }] },
@@ -228,7 +228,7 @@ export default function Home() {
     setStudents((current) => current.map((student) => student.id === dialogId ? {
       ...student,
       riskState: "monitoring",
-      timeline: [{ date: "20 jul", title: "Check-in registrado", detail: "Ação manual do mentor; nenhuma mensagem foi enviada pela Vela.", tone: "warm" }, ...student.timeline],
+      timeline: [{ date: "20 jul", title: "Check-in registrado", detail: "Ação manual do mentor; nenhuma mensagem foi enviada pela Sails.", tone: "warm" }, ...student.timeline],
     } : student));
     setDialogId(null);
     setMessage("");
@@ -248,9 +248,9 @@ export default function Home() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <button className="brand" onClick={() => navigate("cockpit")} aria-label="Vela — ir ao cockpit">
+        <button className="brand" onClick={() => navigate("cockpit")} aria-label="Sails — ir ao cockpit">
           <BrandMark />
-          <span>Vela</span>
+          <span>Sails</span>
         </button>
         <nav aria-label="Navegação principal">
           <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span aria-hidden="true">⌂</span> Cockpit</button>
@@ -268,7 +268,7 @@ export default function Home() {
           <span className="demo-date">20 jul 2026</span>
         </div>
         <header className="mobile-header">
-          <button className="brand" onClick={() => navigate("cockpit")} aria-label="Vela — ir ao cockpit"><BrandMark compact /><span>Vela</span></button>
+          <button className="brand" onClick={() => navigate("cockpit")} aria-label="Sails — ir ao cockpit"><BrandMark compact /><span>Sails</span></button>
           <span className="mobile-count">{openCases.length} pedem atenção</span>
         </header>
 
@@ -390,7 +390,7 @@ export default function Home() {
             <div className="modal-top"><div><p className="eyebrow">Ação do mentor</p><h2 id="checkin-title">Check-in com {selected.name.split(" ")[0]}</h2></div><button ref={closeRef} className="close-button" onClick={() => { setDialogId(null); setMessage(""); }} aria-label="Fechar">×</button></div>
             <p className="modal-context">{selected.signals.slice(0, 2).join(" · ")}</p>
             <label className="message-label"><span>Mensagem sugerida</span><textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={6} aria-describedby="message-safety" /><small id="message-safety">Use apenas conteúdo fictício. Não insira dados pessoais ou confidenciais; copiar transfere o texto ao clipboard deste dispositivo.</small></label>
-            <div className="modal-disclosure"><span aria-hidden="true">i</span><p>A Vela não enviará esta mensagem. Você pode copiá-la e registrar que fez o contato manualmente.</p></div>
+            <div className="modal-disclosure"><span aria-hidden="true">i</span><p>A Sails não enviará esta mensagem. Você pode copiá-la e registrar que fez o contato manualmente.</p></div>
             <div className="modal-actions"><button className="button ghost" onClick={() => { setDialogId(null); setMessage(""); }}>Cancelar</button><button className="button copy" onClick={copyMessage}>Copiar mensagem</button><button className="button primary" onClick={registerCheckIn}>Registrar check-in na demo</button></div>
           </div>
         </div>
