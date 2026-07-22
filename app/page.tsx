@@ -21,9 +21,9 @@ export default function LandingPage() {
       <main>
         <section className="lp-hero" id="inicio">
           <div className="lp-hero-copy">
-            <span className="lp-pill"><i /> O sistema operacional da sua mentoria</span>
-            <h1>Cursos que movem.<br /><em>Mentoria que permanece.</em></h1>
-            <p>Crie sua experiência de aprendizagem, organize a aquisição de novos alunos e descubra quem precisa de você antes da desistência.</p>
+            <span className="lp-pill"><i /> Conteúdo · aquisição · retenção</span>
+            <h1>Você guia a jornada.<br /><em>A Sails cuida do resto.</em></h1>
+            <p>Da primeira venda à última aula, organize sua escola, acompanhe cada aluno e mantenha o negócio em movimento.</p>
             <div className="lp-hero-actions"><a className="lp-cta" href="/portal">Explorar a Sails <span>→</span></a><a className="lp-text-link" href="#plataforma">Ver como funciona <span>↓</span></a></div>
             <div className="lp-trust"><span><b>✓</b> Conteúdo e vídeo</span><span><b>✓</b> Funil e leads</span><span><b>✓</b> Retenção explicável</span></div>
           </div>
@@ -59,13 +59,13 @@ export default function LandingPage() {
 
         <section className="lp-resources" id="recursos">
           <div className="lp-section-head compact"><span className="lp-overline">Tudo que sustenta a operação</span><h2>Menos ferramentas.<br /><em>Mais continuidade.</em></h2></div>
-          <div className="resource-grid"><article><span>▷</span><h3>Cursos & trilhas</h3><p>Vídeos, módulos, quizzes, materiais e liberação programada.</p></article><article><span>◎</span><h3>Alunos & progresso</h3><p>Perfis, histórico, entregas, ritmo e contexto completo.</p></article><article><span>◇</span><h3>Funil & leads</h3><p>Pipeline, origens, propostas e próxima melhor ação.</p></article><article><span>◉</span><h3>Retenção</h3><p>Alertas explicáveis, check-ins e acompanhamento da retomada.</p></article><article><span>◌</span><h3>Comunidade</h3><p>Discussões, agenda e encontros próximos do conteúdo.</p></article><article><span>↗</span><h3>Insights</h3><p>Conclusão, gargalos, conversão e saúde da turma.</p></article></div>
+          <div className="resource-grid"><article><span>▷</span><h3>Cursos & trilhas</h3><p>Vídeos, módulos, quizzes, materiais e liberação programada.</p></article><article><span>◎</span><h3>Alunos & progresso</h3><p>Perfis, histórico, entregas, ritmo e contexto completo.</p></article><article><span>◇</span><h3>Funil & leads</h3><p>Pipeline, origens, propostas e próxima melhor ação.</p></article><article><span>◉</span><h3>Retenção</h3><p>Alertas explicáveis, check-ins e acompanhamento da retomada.</p></article><article><span>◌</span><h3>Comunidade</h3><p>Discussões, agenda e encontros próximos do conteúdo.</p></article><article><span>↗</span><h3>Vendas & automações</h3><p>Checkout, assinaturas, cupons, afiliados e jornadas de e-mail.</p></article></div>
         </section>
 
-        <section className="lp-final"><SailsMark size={46} /><span className="lp-overline">A mentoria nunca apaga</span><h2>Dê vento ao seu negócio.<br />Mantenha cada aluno em movimento.</h2><p>Conheça a experiência que une conteúdo, aquisição e retenção.</p><a className="lp-cta light" href="/portal">Entrar no portal Sails <span>→</span></a></section>
+        <section className="lp-final"><SailsMark size={46} /><span className="lp-overline">A mentoria nunca apaga</span><h2>Você guia a jornada.<br />A Sails cuida do resto.</h2><p>Conteúdo, vendas, comunidade e retenção navegando juntos.</p><a className="lp-cta light" href="/portal">Entrar no portal Sails <span>→</span></a></section>
       </main>
 
-      <footer className="lp-footer"><a className="lp-brand" href="#inicio"><SailsMark size={22} /><span>Sails</span></a><p>Cursos que movem. Mentoria que permanece.</p><a href="/portal">Acessar portal →</a></footer>
+      <footer className="lp-footer"><a className="lp-brand" href="#inicio"><SailsMark size={22} /><span>Sails</span></a><p>Você guia a jornada. A Sails cuida do resto.</p><a href="/portal">Acessar portal →</a></footer>
     </div>
   );
 }

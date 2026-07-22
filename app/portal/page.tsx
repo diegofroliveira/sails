@@ -5,8 +5,9 @@ import Link from "next/link";
 
 type Band = "parada" | "esfriando" | "alta" | "insuficiente";
 type RiskState = "open" | "monitoring" | "none";
-type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing";
+type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "operations";
 type Theme = "light" | "dark";
+type OperationsMode = "sales" | "automations" | "community" | "golive";
 
 type LeadStage = "Novos" | "Conversa" | "Proposta" | "Fechado";
 type Lead = {
@@ -231,6 +232,7 @@ export default function Home() {
   const [studentPreview, setStudentPreview] = useState(false);
   const [marketingMode, setMarketingMode] = useState<"pipeline" | "leads">("pipeline");
   const [leadQuery, setLeadQuery] = useState("");
+  const [operationsMode, setOperationsMode] = useState<OperationsMode>("sales");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -332,6 +334,7 @@ export default function Home() {
     setStudentPreview(false);
     setMarketingMode("pipeline");
     setLeadQuery("");
+    setOperationsMode("sales");
     setToast("Demonstração reiniciada.");
   }
 
@@ -378,6 +381,7 @@ export default function Home() {
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span aria-hidden="true">◎</span> Alunos <em>{openCases.length}</em></button>
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span aria-hidden="true">▷</span> Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span aria-hidden="true">◇</span> Marketing <em>{leads.filter((lead) => lead.stage === "Novos").length}</em></button>
+          <button className={view === "operations" ? "nav-active" : ""} onClick={() => navigate("operations")}><span aria-hidden="true">▦</span> Operação</button>
         </nav>
         <div className="sidebar-foot">
           <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
@@ -523,7 +527,7 @@ export default function Home() {
               <section className="foundation-card">
                 <div><span className="section-kicker">Fundação de produto</span><h2>O básico que uma plataforma de cursos precisa ter</h2><p>A Sails mantém retenção como diferencial, mas agora organiza a base que sustenta a experiência.</p></div>
                 <ul>
-                  <li className="done">Vídeos, textos e materiais</li><li className="done">Módulos e aulas ordenáveis</li><li className="done">Quiz e entregas</li><li className="done">Liberação programada</li><li>Certificados</li><li>Comunidade e agenda</li><li>Checkout e assinaturas</li><li>Cupons e afiliados</li>
+                  <li className="done">Vídeos, textos e materiais</li><li className="done">Módulos e aulas ordenáveis</li><li className="done">Quiz e entregas</li><li className="done">Liberação programada</li><li className="done">Certificados</li><li className="done">Comunidade e agenda</li><li className="done">Checkout e assinaturas</li><li className="done">Cupons e afiliados</li>
                 </ul>
               </section>
             </section>
@@ -631,6 +635,62 @@ export default function Home() {
             </section>
           )}
 
+          {view === "operations" && (
+            <section className="page operations-page" aria-labelledby="operations-title">
+              <div className="page-heading operations-heading">
+                <div><p className="eyebrow">Sails · negócio conectado</p><h1 id="operations-title">Operação</h1><p>Venda, automatize a jornada e prepare a escola para crescer.</p></div>
+                <span className="launch-status"><i /> Pronto para piloto</span>
+              </div>
+
+              <div className="operations-tabs" role="tablist" aria-label="Áreas da operação">
+                {([['sales','Vendas'],['automations','Automações'],['community','Comunidade'],['golive','Go-live']] as const).map(([mode, label]) => <button key={mode} role="tab" aria-selected={operationsMode === mode} onClick={() => setOperationsMode(mode)}>{label}{mode === "golive" && <span>6</span>}</button>)}
+              </div>
+
+              {operationsMode === "sales" && <>
+                <div className="revenue-summary">
+                  <article><span>Receita no mês</span><strong>R$ 38.420</strong><small><b>↑ 18%</b> vs. mês anterior</small></article>
+                  <article><span>Receita recorrente</span><strong>R$ 12.870</strong><small>44 assinaturas ativas</small></article>
+                  <article><span>Ticket médio</span><strong>R$ 1.940</strong><small>19 vendas aprovadas</small></article>
+                  <article><span>Pagamentos em risco</span><strong>3</strong><small>R$ 1.287 a recuperar</small></article>
+                </div>
+                <div className="sales-grid">
+                  <section className="operations-card offers-card"><div className="operations-card-head"><div><span className="section-kicker">Produtos e ofertas</span><h2>O que está à venda</h2></div><button className="button primary" onClick={() => setToast("Nova oferta aberta na demonstração.")}>+ Nova oferta</button></div>
+                    <article className="offer-row"><span className="offer-icon">D</span><div><strong>Formação em Dados & IA</strong><small>Pagamento único · Checkout ativo</small></div><span className="offer-price">R$ 2.490</span><span className="published-pill">Ativa</span><button onClick={() => setToast("Editor de checkout aberto na demonstração.")}>Editar →</button></article>
+                    <article className="offer-row"><span className="offer-icon sql">S</span><div><strong>Clube SQL Analytics</strong><small>Assinatura mensal · 44 membros</small></div><span className="offer-price">R$ 297/mês</span><span className="published-pill">Ativa</span><button onClick={() => setToast("Gestão da assinatura aberta na demonstração.")}>Editar →</button></article>
+                    <div className="commerce-tools"><button onClick={() => setToast("Cupons abertos na demonstração.")}><span>%</span><strong>Cupons</strong><small>3 ativos</small></button><button onClick={() => setToast("Order bumps abertos na demonstração.")}><span>+</span><strong>Order bumps</strong><small>2 ofertas</small></button><button onClick={() => setToast("Afiliados abertos na demonstração.")}><span>↗</span><strong>Afiliados</strong><small>12 parceiros</small></button><button onClick={() => setToast("Recuperação de pagamentos aberta.")}><span>↻</span><strong>Recuperação</strong><small>3 pendências</small></button></div>
+                  </section>
+                  <section className="operations-card orders-card"><div className="operations-card-head"><div><span className="section-kicker">Últimas vendas</span><h2>Pedidos</h2></div><button className="text-button" onClick={() => setToast("Todos os pedidos exibidos na demonstração.")}>Ver todos</button></div>
+                    {[['Marina Lopes','Formação em Dados & IA','R$ 2.490','Pix','Aprovado'],['Bruno Reis','Clube SQL Analytics','R$ 297','Cartão','Aprovado'],['Camila Alves','Formação em Dados & IA','R$ 2.490','Cartão','Em análise'],['Igor Nunes','Clube SQL Analytics','R$ 297','Cartão','Falhou']].map((order) => <article className="order-row" key={order[0]}><span className="avatar">{order[0].split(' ').map((part) => part[0]).join('')}</span><div><strong>{order[0]}</strong><small>{order[1]} · {order[3]}</small></div><strong>{order[2]}</strong><span className={`order-status ${order[4] === 'Aprovado' ? 'success' : order[4] === 'Falhou' ? 'danger' : 'pending'}`}>{order[4]}</span></article>)}
+                  </section>
+                </div>
+              </>}
+
+              {operationsMode === "automations" && <div className="automation-layout">
+                <section className="operations-card"><div className="operations-card-head"><div><span className="section-kicker">Jornadas automáticas</span><h2>Automações ativas</h2></div><button className="button primary" onClick={() => setToast("Nova automação aberta na demonstração.")}>+ Nova automação</button></div>
+                  {[['Lead entrou pelo material gratuito','Nutrição de 5 e-mails','1.248 contatos','Ativa'],['Pagamento aprovado','Acesso + boas-vindas','19 este mês','Ativa'],['7 dias sem atividade','Check-in de retomada','8 alunos','Ativa'],['Curso concluído','Certificado + próxima oferta','12 este mês','Rascunho']].map((flow, index) => <article className="automation-row" key={flow[0]}><span className="automation-number">0{index + 1}</span><div><strong>{flow[0]}</strong><small>Então: {flow[1]}</small></div><span>{flow[2]}</span><button className={flow[3] === 'Ativa' ? 'automation-state active' : 'automation-state'} onClick={() => setToast(`${flow[0]} aberta para edição.`)}>{flow[3]}</button></article>)}
+                </section>
+                <aside className="operations-card email-card"><span className="section-kicker">E-mail da semana</span><h2>Boas-vindas que continuam</h2><div className="email-preview"><small>ASSUNTO</small><strong>Seu primeiro passo na Sails</strong><p>Oi, Marina. Sua jornada começa com uma aula curta e um objetivo simples...</p><button onClick={() => setToast("Prévia da sequência aberta.")}>Ver sequência →</button></div><div className="email-metrics"><span><strong>48%</strong><small>abertura</small></span><span><strong>12%</strong><small>cliques</small></span><span><strong>2</strong><small>respostas</small></span></div></aside>
+              </div>}
+
+              {operationsMode === "community" && <div className="community-layout">
+                <section className="operations-card community-feed"><div className="operations-card-head"><div><span className="section-kicker">Comunidade Dados & IA</span><h2>Conexão também ensina</h2></div><button className="button primary" onClick={() => setToast("Nova publicação aberta na demonstração.")}>+ Publicar</button></div>
+                  <article className="community-post"><span className="avatar">D</span><div><strong>Diego · Mentor</strong><small>há 2 horas · Avisos</small><h3>Qual foi seu principal avanço esta semana?</h3><p>Compartilhe uma pequena vitória ou um bloqueio. Vamos usar as respostas no encontro de quinta.</p><footer><button onClick={() => setToast("18 reações nesta publicação.")}>♡ 18</button><button onClick={() => setToast("7 comentários exibidos.")}>◌ 7 comentários</button></footer></div></article>
+                  <article className="community-post"><span className="avatar">ML</span><div><strong>Marina Lopes</strong><small>ontem · Projetos</small><h3>Meu primeiro dashboard já está no ar 🎉</h3><p>O feedback do grupo no encontro destravou a etapa de modelagem.</p><footer><button onClick={() => setToast("24 reações nesta publicação.")}>♡ 24</button><button onClick={() => setToast("11 comentários exibidos.")}>◌ 11 comentários</button></footer></div></article>
+                </section>
+                <aside className="community-side"><section className="operations-card event-card"><span className="section-kicker">Próximo encontro</span><time>23 JUL · 19H</time><h2>Clínica de projetos</h2><p>Ao vivo · 48 confirmados</p><button className="button wide" onClick={() => setToast("Gestão do encontro aberta.")}>Gerenciar encontro</button></section><section className="operations-card community-stats"><span className="section-kicker">Pulso da comunidade</span><div><strong>76%</strong><span>membros ativos</span></div><div><strong>84</strong><span>interações na semana</span></div><div><strong>2h</strong><span>tempo médio de resposta</span></div></section></aside>
+              </div>}
+
+              {operationsMode === "golive" && <div className="golive-layout">
+                <section className="operations-card readiness-card"><div className="readiness-head"><div><span className="section-kicker">Checklist de lançamento</span><h2>Pronta para piloto. Ainda não para vendas reais.</h2><p>A experiência está completa; as conexões abaixo transformam a demonstração em operação.</p></div><div className="readiness-ring"><strong>8/14</strong><span>itens</span></div></div>
+                  <div className="checklist-grid">
+                    {[['✓','Marca, landing e domínio','Pronto'],['✓','Curso, vídeo e progresso','Pronto'],['✓','Funil, leads e retenção','Pronto'],['✓','Ofertas e jornadas desenhadas','Pronto'],['1','Login seguro e permissões','Conectar'],['2','Banco de dados e backups','Conectar'],['3','Vídeo protegido e legendas','Conectar'],['4','Checkout, Pix e recorrência','Conectar'],['5','E-mail transacional e marketing','Conectar'],['6','LGPD, termos e atendimento','Conectar']].map((item) => <article className={item[2] === 'Pronto' ? 'ready' : ''} key={item[1]}><span>{item[0]}</span><div><strong>{item[1]}</strong><small>{item[2]}</small></div></article>)}
+                  </div>
+                </section>
+                <aside className="operations-card launch-plan"><span className="section-kicker">Ordem recomendada</span><h2>Do piloto ao go-live</h2><ol><li><span>01</span><p><strong>Infraestrutura</strong><small>Autenticação, dados, vídeo e backups.</small></p></li><li><span>02</span><p><strong>Receita</strong><small>Gateway, checkout, fiscal e recuperação.</small></p></li><li><span>03</span><p><strong>Confiança</strong><small>LGPD, suporte, monitoramento e contingência.</small></p></li></ol><button className="button primary wide" onClick={() => setToast("Plano de go-live priorizado na demonstração.")}>Priorizar conexões</button></aside>
+              </div>}
+            </section>
+          )}
+
           {view === "detail" && selected && (
             <section className="page" aria-labelledby="student-title">
               <button className="back-link" onClick={() => navigate("students")}><span aria-hidden="true">←</span> Voltar para alunos</button>
@@ -661,6 +721,7 @@ export default function Home() {
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span>◎</span>Alunos</button>
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span>▷</span>Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span>◇</span>Marketing</button>
+          <button className={view === "operations" ? "nav-active" : ""} onClick={() => navigate("operations")}><span>▦</span>Operação</button>
         </nav>
       </div>
 
