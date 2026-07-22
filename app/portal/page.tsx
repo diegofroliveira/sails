@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import AgendaView from "./AgendaView";
 
 type Band = "parada" | "esfriando" | "alta" | "insuficiente";
 type RiskState = "open" | "monitoring" | "none";
-type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "operations";
+type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "agenda" | "operations";
 type Theme = "light" | "dark";
 type OperationsMode = "finance" | "sales" | "automations" | "community" | "branding" | "golive";
 
@@ -21,12 +24,12 @@ type BrandSettings = {
 };
 
 const defaultBrandSettings: BrandSettings = {
-  mentorshipName: "Mentoria Dados & IA",
-  portalName: "Dados & IA com Diego",
-  tagline: "Transforme dados em decisões e projetos em carreira.",
-  primaryColor: "#ff6b35",
-  customDomain: "mentoria.seudominio.com.br",
-  emailSender: "Diego · Mentoria Dados & IA",
+  mentorshipName: "FROM DATA",
+  portalName: "FROM DATA",
+  tagline: "Every career starts with a FROM.",
+  primaryColor: "#06b6d4",
+  customDomain: "fromdata.seudominio.com.br",
+  emailSender: "Diego · FROM DATA",
   hideSailsBranding: false,
 };
 
@@ -277,6 +280,13 @@ export default function Home() {
   }), [students, query, filter]);
 
   useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) window.location.replace("/login");
+    });
+  }, []);
+
+  useEffect(() => {
     if (!dialogId) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") { setDialogId(null); setMessage(""); }
@@ -392,6 +402,11 @@ export default function Home() {
     setToast("Identidade do piloto restaurada.");
   }
 
+  async function signOut() {
+    await createSupabaseBrowserClient().auth.signOut();
+    window.location.assign("/login");
+  }
+
   function chooseVideo(file?: File) {
     if (!file) return;
     if (!file.type.startsWith("video/")) {
@@ -435,13 +450,15 @@ export default function Home() {
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span aria-hidden="true">◎</span> Alunos <em>{openCases.length}</em></button>
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span aria-hidden="true">▷</span> Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span aria-hidden="true">◇</span> Marketing <em>{leads.filter((lead) => lead.stage === "Novos").length}</em></button>
+          <button className={view === "agenda" ? "nav-active" : ""} onClick={() => navigate("agenda")}><span aria-hidden="true">▣</span> Agenda</button>
           <button className={view === "operations" && operationsMode === "finance" ? "nav-active" : ""} onClick={() => { setOperationsMode("finance"); navigate("operations"); }}><span aria-hidden="true">$</span> Financeiro</button>
           <button className={view === "operations" && operationsMode !== "finance" ? "nav-active" : ""} onClick={() => { setOperationsMode("sales"); navigate("operations"); }}><span aria-hidden="true">▦</span> Operação</button>
         </nav>
         <div className="sidebar-foot">
           <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
           <Link className="site-link" href="/">↗ <span>Ver landing page</span></Link>
-          <div className="tenant"><span className="avatar small">D</span><span><strong>{brandSettings.mentorshipName}</strong><small>Diego · cliente-piloto</small></span></div>
+          <div className="tenant"><Image className="tenant-logo" src="/from-data-logo.png" alt="" width={30} height={30} /><span><strong>{brandSettings.mentorshipName}</strong><small>Diego · cliente-piloto</small></span></div>
+          <button className="signout-link" onClick={signOut}>Sair da conta</button>
           <button className="reset-link" onClick={resetDemo}>Reiniciar demonstração</button>
         </div>
       </aside>
@@ -696,6 +713,8 @@ export default function Home() {
             </section>
           )}
 
+          {view === "agenda" && <AgendaView onToast={setToast} />}
+
           {view === "operations" && (
             <section className="page operations-page" aria-labelledby="operations-title">
               <div className="page-heading operations-heading">
@@ -779,7 +798,7 @@ export default function Home() {
                 <aside className="branding-side">
                   <section className="operations-card brand-preview" style={{ "--preview-brand": brandDraft.primaryColor } as CSSProperties}>
                     <div className="preview-browser"><i /><i /><i /><span>{brandDraft.customDomain}</span></div>
-                    <div className="preview-portal"><header><span className="preview-logo">D</span><strong>{brandDraft.portalName || "Sua mentoria"}</strong></header><main><span>BOAS-VINDAS À SUA JORNADA</span><h3>Olá, Marina.</h3><p>{brandDraft.tagline || "Sua transformação começa aqui."}</p><button>Continuar aprendendo →</button><div><article><small>PROGRESSO</small><strong>48%</strong></article><article><small>PRÓXIMO ENCONTRO</small><strong>23 jul · 19h</strong></article></div></main>{!brandDraft.hideSailsBranding && <footer>Powered by Sails</footer>}</div>
+                    <div className="preview-portal"><header><Image className="preview-logo-image" src="/from-data-logo.png" alt="" width={34} height={34} /><strong>{brandDraft.portalName || "Sua mentoria"}</strong></header><main><span>BOAS-VINDAS À SUA JORNADA</span><h3>Olá, Marina.</h3><p>{brandDraft.tagline || "Sua transformação começa aqui."}</p><button>Continuar aprendendo →</button><div><article><small>PROGRESSO</small><strong>48%</strong></article><article><small>PRÓXIMO ENCONTRO</small><strong>23 jul · 19h</strong></article></div></main>{!brandDraft.hideSailsBranding && <footer>Powered by Sails</footer>}</div>
                   </section>
                   <section className="operations-card addon-checklist"><span className="section-kicker">Incluído no adicional</span><h2>Pacote de personalização</h2><ul><li><span>✓</span>Identidade visual e portal</li><li><span>✓</span>Domínio personalizado</li><li><span>✓</span>E-mails com sua marca</li><li><span>✓</span>Certificados e páginas públicas</li><li><span>✓</span>White-label opcional</li></ul><small>Domínio e e-mail dependem de validação técnica antes do go-live.</small></section>
                 </aside>
@@ -828,6 +847,7 @@ export default function Home() {
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span>◎</span>Alunos</button>
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span>▷</span>Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span>◇</span>Marketing</button>
+          <button className={view === "agenda" ? "nav-active" : ""} onClick={() => navigate("agenda")}><span>▣</span>Agenda</button>
           <button className={view === "operations" ? "nav-active" : ""} onClick={() => { setOperationsMode("finance"); navigate("operations"); }}><span>▦</span>Negócio</button>
         </nav>
       </div>

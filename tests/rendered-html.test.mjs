@@ -47,4 +47,26 @@ test("server-renders the platform portal", async () => {
   assert.match(html, /Cursos/);
   assert.match(html, /Marketing/);
   assert.match(html, /Financeiro/);
+  assert.match(html, /Agenda/);
+});
+
+test("server-renders the FROM DATA landing page", async () => {
+  const response = await render("/from-data");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /FROM DATA/);
+  assert.match(html, /Every career/);
+  assert.match(html, /starts with a/);
+  assert.match(html, /href="\/from-data\/agendar"/);
+});
+
+test("server-renders the FROM DATA booking briefing", async () => {
+  const response = await render("/from-data/agendar");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /BRIEF CALL/i);
+  assert.match(html, /Conte sobre o seu momento/);
+  assert.match(html, /Solicitar brief call/);
 });
