@@ -1,0 +1,2 @@
+-- Intentionally empty. Production-like demo data should be inserted only in local
+-- development fixtures, never pushed to the hosted project by default.
