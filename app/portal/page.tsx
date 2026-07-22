@@ -1,13 +1,34 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 
 type Band = "parada" | "esfriando" | "alta" | "insuficiente";
 type RiskState = "open" | "monitoring" | "none";
 type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "operations";
 type Theme = "light" | "dark";
-type OperationsMode = "finance" | "sales" | "automations" | "community" | "golive";
+type OperationsMode = "finance" | "sales" | "automations" | "community" | "branding" | "golive";
+
+type BrandSettings = {
+  mentorshipName: string;
+  portalName: string;
+  tagline: string;
+  primaryColor: string;
+  customDomain: string;
+  emailSender: string;
+  hideSailsBranding: boolean;
+};
+
+const defaultBrandSettings: BrandSettings = {
+  mentorshipName: "Mentoria Dados & IA",
+  portalName: "Dados & IA com Diego",
+  tagline: "Transforme dados em decisões e projetos em carreira.",
+  primaryColor: "#ff6b35",
+  customDomain: "mentoria.seudominio.com.br",
+  emailSender: "Diego · Mentoria Dados & IA",
+  hideSailsBranding: false,
+};
 
 type LeadStage = "Novos" | "Conversa" | "Proposta" | "Fechado";
 type Lead = {
@@ -233,6 +254,8 @@ export default function Home() {
   const [marketingMode, setMarketingMode] = useState<"pipeline" | "leads">("pipeline");
   const [leadQuery, setLeadQuery] = useState("");
   const [operationsMode, setOperationsMode] = useState<OperationsMode>("finance");
+  const [brandSettings, setBrandSettings] = useState<BrandSettings>(defaultBrandSettings);
+  const [brandDraft, setBrandDraft] = useState<BrandSettings>(defaultBrandSettings);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -276,6 +299,21 @@ export default function Home() {
     const timer = window.setTimeout(() => setToast(""), 3200);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("sails-pilot-branding");
+    if (!stored) return;
+    try {
+      const saved = { ...defaultBrandSettings, ...JSON.parse(stored) } as BrandSettings;
+      const timer = window.setTimeout(() => {
+        setBrandSettings(saved);
+        setBrandDraft(saved);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    } catch {
+      window.localStorage.removeItem("sails-pilot-branding");
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -335,7 +373,23 @@ export default function Home() {
     setMarketingMode("pipeline");
     setLeadQuery("");
     setOperationsMode("finance");
+    setBrandSettings(defaultBrandSettings);
+    setBrandDraft(defaultBrandSettings);
+    window.localStorage.removeItem("sails-pilot-branding");
     setToast("Demonstração reiniciada.");
+  }
+
+  function saveBranding() {
+    setBrandSettings(brandDraft);
+    window.localStorage.setItem("sails-pilot-branding", JSON.stringify(brandDraft));
+    setToast("Personalização salva para o seu piloto.");
+  }
+
+  function resetBranding() {
+    setBrandDraft(defaultBrandSettings);
+    setBrandSettings(defaultBrandSettings);
+    window.localStorage.removeItem("sails-pilot-branding");
+    setToast("Identidade do piloto restaurada.");
   }
 
   function chooseVideo(file?: File) {
@@ -370,7 +424,7 @@ export default function Home() {
   }
 
   return (
-    <div className="app-shell" data-theme={theme}>
+    <div className="app-shell" data-theme={theme} style={{ "--ember": brandSettings.primaryColor, "--ember-soft": brandSettings.primaryColor } as CSSProperties}>
       <aside className="sidebar">
         <button className="brand" onClick={() => navigate("cockpit")} aria-label="Sails — ir ao cockpit">
           <BrandMark />
@@ -387,7 +441,7 @@ export default function Home() {
         <div className="sidebar-foot">
           <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
           <Link className="site-link" href="/">↗ <span>Ver landing page</span></Link>
-          <div className="tenant"><span className="avatar small">D</span><span><strong>Mentoria Dados & IA</strong><small>Diego · mentor</small></span></div>
+          <div className="tenant"><span className="avatar small">D</span><span><strong>{brandSettings.mentorshipName}</strong><small>Diego · cliente-piloto</small></span></div>
           <button className="reset-link" onClick={resetDemo}>Reiniciar demonstração</button>
         </div>
       </aside>
@@ -650,7 +704,7 @@ export default function Home() {
               </div>
 
               <div className="operations-tabs" role="tablist" aria-label="Áreas da operação">
-                {([['finance','Financeiro'],['sales','Vendas'],['automations','Automações'],['community','Comunidade'],['golive','Go-live']] as const).map(([mode, label]) => <button key={mode} role="tab" aria-selected={operationsMode === mode} onClick={() => setOperationsMode(mode)}>{label}{mode === "golive" && <span>6</span>}</button>)}
+                {([['finance','Financeiro'],['sales','Vendas'],['automations','Automações'],['community','Comunidade'],['branding','Personalização'],['golive','Go-live']] as const).map(([mode, label]) => <button key={mode} role="tab" aria-selected={operationsMode === mode} onClick={() => setOperationsMode(mode)}>{label}{mode === "branding" && <em>ADD-ON</em>}{mode === "golive" && <span>6</span>}</button>)}
               </div>
 
               {operationsMode === "finance" && <>
@@ -705,6 +759,30 @@ export default function Home() {
                   <article className="community-post"><span className="avatar">ML</span><div><strong>Marina Lopes</strong><small>ontem · Projetos</small><h3>Meu primeiro dashboard já está no ar 🎉</h3><p>O feedback do grupo no encontro destravou a etapa de modelagem.</p><footer><button onClick={() => setToast("24 reações nesta publicação.")}>♡ 24</button><button onClick={() => setToast("11 comentários exibidos.")}>◌ 11 comentários</button></footer></div></article>
                 </section>
                 <aside className="community-side"><section className="operations-card event-card"><span className="section-kicker">Próximo encontro</span><time>23 JUL · 19H</time><h2>Clínica de projetos</h2><p>Ao vivo · 48 confirmados</p><button className="button wide" onClick={() => setToast("Gestão do encontro aberta.")}>Gerenciar encontro</button></section><section className="operations-card community-stats"><span className="section-kicker">Pulso da comunidade</span><div><strong>76%</strong><span>membros ativos</span></div><div><strong>84</strong><span>interações na semana</span></div><div><strong>2h</strong><span>tempo médio de resposta</span></div></section></aside>
+              </div>}
+
+              {operationsMode === "branding" && <div className="branding-layout">
+                <section className="operations-card branding-editor">
+                  <div className="operations-card-head"><div><span className="section-kicker">Sails Signature · adicional premium</span><h2>Personalize a experiência do aluno</h2><p>Logo, cores, domínio e comunicação com a identidade da sua mentoria.</p></div><span className="pilot-badge">PILOTO ATIVO</span></div>
+                  <div className="branding-offer"><div><span>ADICIONAL SUGERIDO</span><strong>R$ 149/mês</strong><small>+ R$ 490 de implantação</small></div><p>Para o seu ambiente de teste, o adicional está em <strong>cortesia de piloto</strong>. Os valores ficam editáveis na proposta comercial.</p></div>
+                  <div className="branding-form">
+                    <label><span>Nome da mentoria</span><input value={brandDraft.mentorshipName} onChange={(event) => setBrandDraft({ ...brandDraft, mentorshipName: event.target.value })} /></label>
+                    <label><span>Nome exibido no portal</span><input value={brandDraft.portalName} onChange={(event) => setBrandDraft({ ...brandDraft, portalName: event.target.value })} /></label>
+                    <label className="full"><span>Promessa principal</span><input value={brandDraft.tagline} onChange={(event) => setBrandDraft({ ...brandDraft, tagline: event.target.value })} /></label>
+                    <label><span>Cor principal</span><span className="color-input"><input type="color" value={brandDraft.primaryColor} onChange={(event) => setBrandDraft({ ...brandDraft, primaryColor: event.target.value })} /><input value={brandDraft.primaryColor} onChange={(event) => setBrandDraft({ ...brandDraft, primaryColor: event.target.value })} /></span></label>
+                    <label><span>Domínio desejado</span><input value={brandDraft.customDomain} onChange={(event) => setBrandDraft({ ...brandDraft, customDomain: event.target.value })} /></label>
+                    <label className="full"><span>Remetente dos e-mails</span><input value={brandDraft.emailSender} onChange={(event) => setBrandDraft({ ...brandDraft, emailSender: event.target.value })} /></label>
+                    <label className="branding-check full"><input type="checkbox" checked={brandDraft.hideSailsBranding} onChange={(event) => setBrandDraft({ ...brandDraft, hideSailsBranding: event.target.checked })} /><span><strong>White-label completo</strong><small>Ocultar “Powered by Sails” no portal do aluno.</small></span></label>
+                  </div>
+                  <div className="branding-actions"><button className="button primary" onClick={saveBranding}>Salvar personalização</button><button className="button" onClick={resetBranding}>Restaurar piloto</button><small>As preferências deste piloto ficam salvas neste dispositivo.</small></div>
+                </section>
+                <aside className="branding-side">
+                  <section className="operations-card brand-preview" style={{ "--preview-brand": brandDraft.primaryColor } as CSSProperties}>
+                    <div className="preview-browser"><i /><i /><i /><span>{brandDraft.customDomain}</span></div>
+                    <div className="preview-portal"><header><span className="preview-logo">D</span><strong>{brandDraft.portalName || "Sua mentoria"}</strong></header><main><span>BOAS-VINDAS À SUA JORNADA</span><h3>Olá, Marina.</h3><p>{brandDraft.tagline || "Sua transformação começa aqui."}</p><button>Continuar aprendendo →</button><div><article><small>PROGRESSO</small><strong>48%</strong></article><article><small>PRÓXIMO ENCONTRO</small><strong>23 jul · 19h</strong></article></div></main>{!brandDraft.hideSailsBranding && <footer>Powered by Sails</footer>}</div>
+                  </section>
+                  <section className="operations-card addon-checklist"><span className="section-kicker">Incluído no adicional</span><h2>Pacote de personalização</h2><ul><li><span>✓</span>Identidade visual e portal</li><li><span>✓</span>Domínio personalizado</li><li><span>✓</span>E-mails com sua marca</li><li><span>✓</span>Certificados e páginas públicas</li><li><span>✓</span>White-label opcional</li></ul><small>Domínio e e-mail dependem de validação técnica antes do go-live.</small></section>
+                </aside>
               </div>}
 
               {operationsMode === "golive" && <div className="golive-layout">

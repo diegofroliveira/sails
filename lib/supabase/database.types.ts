@@ -553,6 +553,112 @@ export type Database = {
           },
         ]
       }
+      organization_addons: {
+        Row: {
+          activated_at: string | null
+          addon_code: string
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          monthly_amount_cents: number
+          organization_id: string
+          setup_amount_cents: number
+          status: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          addon_code: string
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          monthly_amount_cents?: number
+          organization_id: string
+          setup_amount_cents?: number
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          addon_code?: string
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          monthly_amount_cents?: number
+          organization_id?: string
+          setup_amount_cents?: number
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_addons_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_branding: {
+        Row: {
+          accent_color: string
+          created_at: string
+          custom_domain: string | null
+          email_reply_to: string | null
+          email_sender_name: string | null
+          favicon_url: string | null
+          hide_sails_branding: boolean
+          logo_url: string | null
+          organization_id: string
+          portal_name: string
+          primary_color: string
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          created_at?: string
+          custom_domain?: string | null
+          email_reply_to?: string | null
+          email_sender_name?: string | null
+          favicon_url?: string | null
+          hide_sails_branding?: boolean
+          logo_url?: string | null
+          organization_id: string
+          portal_name: string
+          primary_color?: string
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          created_at?: string
+          custom_domain?: string | null
+          email_reply_to?: string | null
+          email_sender_name?: string | null
+          favicon_url?: string | null
+          hide_sails_branding?: boolean
+          logo_url?: string | null
+          organization_id?: string
+          portal_name?: string
+          primary_color?: string
+          tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
