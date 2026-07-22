@@ -4,7 +4,47 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type Band = "parada" | "esfriando" | "alta" | "insuficiente";
 type RiskState = "open" | "monitoring" | "none";
-type View = "cockpit" | "students" | "detail";
+type View = "cockpit" | "students" | "detail" | "courses" | "course-builder";
+type Theme = "light" | "dark";
+
+type CourseLesson = {
+  id: string;
+  title: string;
+  type: "video" | "text" | "quiz" | "live";
+  duration?: string;
+  published: boolean;
+};
+
+type CourseModule = {
+  title: string;
+  lessons: CourseLesson[];
+};
+
+const courseModules: CourseModule[] = [
+  {
+    title: "01 · Fundamentos",
+    lessons: [
+      { id: "boas-vindas", title: "Boas-vindas e como usar a trilha", type: "video", duration: "08:42", published: true },
+      { id: "mapa", title: "O mapa da formação", type: "text", duration: "6 min", published: true },
+      { id: "diagnostico", title: "Diagnóstico inicial", type: "quiz", duration: "10 perguntas", published: true },
+    ],
+  },
+  {
+    title: "02 · Dados na prática",
+    lessons: [
+      { id: "preparando", title: "Preparando os dados", type: "video", duration: "24:10", published: true },
+      { id: "modelagem", title: "Modelagem dimensional", type: "video", duration: "31:05", published: true },
+      { id: "projeto-2", title: "Projeto do módulo", type: "quiz", duration: "Entrega", published: true },
+    ],
+  },
+  {
+    title: "03 · IA aplicada",
+    lessons: [
+      { id: "llm", title: "LLMs no fluxo de dados", type: "video", duration: "27:30", published: false },
+      { id: "lab", title: "Laboratório ao vivo", type: "live", duration: "23 jul · 19h", published: false },
+    ],
+  },
+];
 
 type Student = {
   id: string;
@@ -157,6 +197,11 @@ export default function Home() {
   const [dialogId, setDialogId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [toast, setToast] = useState("");
+  const [theme, setTheme] = useState<Theme>("light");
+  const [activeLessonId, setActiveLessonId] = useState("boas-vindas");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoName, setVideoName] = useState("");
+  const [studentPreview, setStudentPreview] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -164,6 +209,8 @@ export default function Home() {
   const openCases = students.filter((student) => student.riskState === "open");
   const monitoring = students.filter((student) => student.riskState === "monitoring");
   const urgent = students.filter((student) => student.riskState === "open" || student.riskState === "monitoring");
+  const allLessons = courseModules.flatMap((module) => module.lessons);
+  const activeLesson = allLessons.find((lesson) => lesson.id === activeLessonId) ?? allLessons[0];
 
   const filtered = useMemo(() => students.filter((student) => {
     const matchesQuery = `${student.name} ${student.track}`.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR"));
@@ -197,6 +244,12 @@ export default function Home() {
     const timer = window.setTimeout(() => setToast(""), 3200);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
 
   function navigate(next: View, id?: string) {
     if (id) setSelectedId(id);
@@ -242,11 +295,26 @@ export default function Home() {
     setFilter("all");
     setQuery("");
     setMessage("");
+    setTheme("light");
+    setVideoUrl(null);
+    setVideoName("");
+    setStudentPreview(false);
     setToast("Demonstração reiniciada.");
   }
 
+  function chooseVideo(file?: File) {
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      setToast("Escolha um arquivo de vídeo compatível.");
+      return;
+    }
+    setVideoUrl(URL.createObjectURL(file));
+    setVideoName(file.name);
+    setToast("Vídeo carregado para prévia local.");
+  }
+
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-theme={theme}>
       <aside className="sidebar">
         <button className="brand" onClick={() => navigate("cockpit")} aria-label="Sails — ir ao cockpit">
           <BrandMark />
@@ -255,8 +323,10 @@ export default function Home() {
         <nav aria-label="Navegação principal">
           <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span aria-hidden="true">⌂</span> Cockpit</button>
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span aria-hidden="true">◎</span> Alunos <em>{openCases.length}</em></button>
+          <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span aria-hidden="true">▷</span> Cursos</button>
         </nav>
         <div className="sidebar-foot">
+          <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
           <div className="tenant"><span className="avatar small">D</span><span><strong>Mentoria Dados & IA</strong><small>Diego · mentor</small></span></div>
           <button className="reset-link" onClick={resetDemo}>Reiniciar demonstração</button>
         </div>
@@ -269,7 +339,7 @@ export default function Home() {
         </div>
         <header className="mobile-header">
           <button className="brand" onClick={() => navigate("cockpit")} aria-label="Sails — ir ao cockpit"><BrandMark compact /><span>Sails</span></button>
-          <span className="mobile-count">{openCases.length} pedem atenção</span>
+          <button className="mobile-theme" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}>{theme === "light" ? "☾" : "☀"}</button>
         </header>
 
         <main>
@@ -353,6 +423,109 @@ export default function Home() {
             </section>
           )}
 
+          {view === "courses" && (
+            <section className="page courses-page" aria-labelledby="courses-title">
+              <div className="page-heading">
+                <div><p className="eyebrow">Conteúdo e experiência</p><h1 id="courses-title">Cursos</h1><p>Construa a trilha, publique aulas e acompanhe onde os alunos travam.</p></div>
+                <button className="button primary" onClick={() => setToast("Novo curso será criado na próxima etapa da demonstração.")}>+ Novo curso</button>
+              </div>
+
+              <div className="course-summary">
+                <div><strong>2</strong><span>cursos ativos</span></div>
+                <div><strong>14</strong><span>módulos</span></div>
+                <div><strong>42</strong><span>aulas publicadas</span></div>
+                <div><strong>68%</strong><span>conclusão média</span></div>
+              </div>
+
+              <div className="course-grid">
+                <article className="course-card featured-course">
+                  <div className="course-cover"><BrandMark /><span>Dados & IA</span><small>Formação completa</small></div>
+                  <div className="course-card-body">
+                    <div className="course-card-top"><span className="published-pill">Publicado</span><button aria-label="Mais opções">•••</button></div>
+                    <h2>Formação em Dados & IA</h2>
+                    <p>Da fundação ao primeiro projeto aplicado, com encontros ao vivo e acompanhamento.</p>
+                    <div className="course-progress"><span><strong>32</strong> alunos</span><span><strong>6</strong> módulos</span><span><strong>24</strong> aulas</span></div>
+                    <div className="course-health"><span>Conclusão média</span><strong>64%</strong><i><b style={{ width: "64%" }} /></i></div>
+                    <button className="button course-edit" onClick={() => navigate("course-builder")}>Editar conteúdo <span aria-hidden="true">→</span></button>
+                  </div>
+                </article>
+
+                <article className="course-card">
+                  <div className="course-cover sql"><span>SQL</span><small>Analytics na prática</small></div>
+                  <div className="course-card-body">
+                    <div className="course-card-top"><span className="published-pill">Publicado</span><button aria-label="Mais opções">•••</button></div>
+                    <h2>SQL para Analytics</h2>
+                    <p>Consultas, modelagem e desafios para quem quer trabalhar com dados.</p>
+                    <div className="course-progress"><span><strong>18</strong> alunos</span><span><strong>4</strong> módulos</span><span><strong>18</strong> aulas</span></div>
+                    <div className="course-health"><span>Conclusão média</span><strong>76%</strong><i><b style={{ width: "76%" }} /></i></div>
+                    <button className="button course-edit" onClick={() => { setActiveLessonId("preparando"); navigate("course-builder"); }}>Editar conteúdo <span aria-hidden="true">→</span></button>
+                  </div>
+                </article>
+
+                <button className="new-course-card" onClick={() => setToast("Novo curso será criado na próxima etapa da demonstração.")}><span>+</span><strong>Criar novo curso</strong><small>Comece do zero ou use uma estrutura sugerida.</small></button>
+              </div>
+
+              <section className="foundation-card">
+                <div><span className="section-kicker">Fundação de produto</span><h2>O básico que uma plataforma de cursos precisa ter</h2><p>A Sails mantém retenção como diferencial, mas agora organiza a base que sustenta a experiência.</p></div>
+                <ul>
+                  <li className="done">Vídeos, textos e materiais</li><li className="done">Módulos e aulas ordenáveis</li><li className="done">Quiz e entregas</li><li className="done">Liberação programada</li><li>Certificados</li><li>Comunidade e agenda</li><li>Checkout e assinaturas</li><li>Cupons e afiliados</li>
+                </ul>
+              </section>
+            </section>
+          )}
+
+          {view === "course-builder" && (
+            <section className={`page builder-page ${studentPreview ? "student-preview" : ""}`} aria-labelledby="builder-title">
+              <button className="back-link" onClick={() => { setStudentPreview(false); navigate("courses"); }}><span aria-hidden="true">←</span> Voltar para cursos</button>
+              <div className="builder-head">
+                <div><p className="eyebrow">{studentPreview ? "Visão do aluno" : "Editor do curso"}</p><h1 id="builder-title">Formação em Dados & IA</h1><p>{studentPreview ? "Veja exatamente como a aula será entregue." : "6 módulos · 24 aulas · última edição hoje"}</p></div>
+                <div className="builder-actions">
+                  <button className="button" onClick={() => setStudentPreview(!studentPreview)}>{studentPreview ? "Sair da prévia" : "Visualizar como aluno"}</button>
+                  {!studentPreview && <button className="button primary" onClick={() => setToast("Alterações salvas apenas nesta demonstração.")}>Salvar alterações</button>}
+                </div>
+              </div>
+
+              <div className="builder-shell">
+                <aside className="curriculum-panel">
+                  <div className="curriculum-title"><div><span className="section-kicker">Currículo</span><h2>Conteúdo do curso</h2></div>{!studentPreview && <button onClick={() => setToast("Novo módulo adicionado à demonstração.")} aria-label="Adicionar módulo">+</button>}</div>
+                  <div className="module-list">
+                    {courseModules.map((module) => <section key={module.title} className="course-module"><h3>{module.title}<span>{module.lessons.length} aulas</span></h3>{module.lessons.map((lesson) => <button key={lesson.id} className={activeLessonId === lesson.id ? "lesson-active" : ""} onClick={() => setActiveLessonId(lesson.id)}><span className={`lesson-type type-${lesson.type}`} aria-hidden="true">{lesson.type === "video" ? "▶" : lesson.type === "quiz" ? "?" : lesson.type === "live" ? "●" : "≡"}</span><span><strong>{lesson.title}</strong><small>{lesson.duration} · {lesson.published ? "Publicado" : "Rascunho"}</small></span>{!studentPreview && <i aria-hidden="true">⋮⋮</i>}</button>)}</section>)}
+                  </div>
+                  {!studentPreview && <button className="add-lesson" onClick={() => setToast("Nova aula adicionada à demonstração.")}>+ Adicionar aula</button>}
+                </aside>
+
+                <div className="lesson-editor">
+                  <div className="lesson-editor-head"><div><span className="section-kicker">{activeLesson.type === "video" ? "Videoaula" : activeLesson.type === "quiz" ? "Avaliação" : activeLesson.type === "live" ? "Encontro ao vivo" : "Conteúdo"}</span><h2>{activeLesson.title}</h2></div><span className={activeLesson.published ? "published-pill" : "draft-pill"}>{activeLesson.published ? "Publicado" : "Rascunho"}</span></div>
+
+                  {activeLesson.type === "video" ? (
+                    <div className="video-block">
+                      {videoUrl ? <video src={videoUrl} controls playsInline aria-label={`Prévia de ${videoName}`} /> : <div className="video-placeholder"><span className="video-play">▶</span><strong>Adicione o vídeo desta aula</strong><p>Envie um arquivo para testar o player agora. Nada sai deste dispositivo.</p><label className="button primary upload-button">Escolher vídeo<input type="file" accept="video/mp4,video/quicktime,video/x-m4v,video/webm" onChange={(event) => chooseVideo(event.target.files?.[0])} /></label><small>MP4, MOV, M4V ou WebM · prévia local</small></div>}
+                      {videoUrl && <div className="video-loaded"><span><strong>{videoName}</strong><small>Prévia local · não enviado</small></span><label className="button">Trocar vídeo<input type="file" accept="video/*" onChange={(event) => chooseVideo(event.target.files?.[0])} /></label></div>}
+                    </div>
+                  ) : activeLesson.type === "quiz" ? (
+                    <div className="quiz-preview"><span>?</span><h3>Diagnóstico inicial</h3><p>10 perguntas · nota mínima 70% · 2 tentativas</p><button className="button" onClick={() => setToast("Editor de quiz aberto na demonstração.")}>Editar perguntas</button></div>
+                  ) : activeLesson.type === "live" ? (
+                    <div className="live-preview"><span>● Ao vivo</span><h3>23 de julho · 19h</h3><p>Adicione o link da sala e os materiais antes do encontro.</p><button className="button" onClick={() => setToast("Configuração do encontro aberta na demonstração.")}>Configurar encontro</button></div>
+                  ) : <div className="text-preview"><h3>O que você vai aprender</h3><p>Use este espaço para texto, imagens, links e materiais complementares da aula.</p></div>}
+
+                  {!studentPreview && <>
+                    <div className="content-toolbar" aria-label="Adicionar conteúdo"><span>Adicionar à aula</span><button onClick={() => setToast("Bloco de vídeo selecionado.")}>▶ Vídeo</button><button onClick={() => setToast("Bloco de texto adicionado à demonstração.")}>≡ Texto</button><button onClick={() => setToast("Material PDF adicionado à demonstração.")}>▤ PDF</button><button onClick={() => setToast("Quiz adicionado à demonstração.")}>? Quiz</button></div>
+                    <div className="lesson-settings">
+                      <label><span>Título da aula</span><input defaultValue={activeLesson.title} /></label>
+                      <div><label><span>Liberação</span><select defaultValue="immediate"><option value="immediate">Imediatamente</option><option value="days">Dias após matrícula</option><option value="date">Em uma data</option></select></label><label><span>Conclusão</span><select defaultValue="video"><option value="video">Assistir ao vídeo</option><option value="manual">Marcação manual</option><option value="quiz">Aprovar no quiz</option></select></label></div>
+                      <label className="lesson-description"><span>Descrição</span><textarea rows={3} defaultValue="Nesta aula, você vai entender o objetivo do módulo e preparar o ambiente para avançar sem bloqueios." /></label>
+                    </div>
+                  </>}
+                </div>
+
+                {!studentPreview && <aside className="lesson-side">
+                  <section><span className="section-kicker">Retenção na aula</span><h2>Saúde do conteúdo</h2><div className="lesson-metric"><strong>81%</strong><span>concluem esta aula</span></div><div className="lesson-metric"><strong>14:32</strong><span>tempo médio assistido</span></div><div className="lesson-metric warning"><strong>5</strong><span>alunos pararam aqui</span></div><button className="button wide" onClick={() => { setFilter("attention"); navigate("students"); }}>Ver alunos em risco</button></section>
+                  <section><span className="section-kicker">Checklist</span><h2>Antes de publicar</h2><ul className="publish-check"><li className="done">Título e descrição</li><li className={videoUrl ? "done" : ""}>Vídeo da aula</li><li>Legenda do vídeo</li><li className="done">Critério de conclusão</li><li>Material complementar</li></ul></section>
+                </aside>}
+              </div>
+            </section>
+          )}
+
           {view === "detail" && selected && (
             <section className="page" aria-labelledby="student-title">
               <button className="back-link" onClick={() => navigate("students")}><span aria-hidden="true">←</span> Voltar para alunos</button>
@@ -381,6 +554,7 @@ export default function Home() {
         <nav className="mobile-nav" aria-label="Navegação principal móvel">
           <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span>⌂</span>Cockpit</button>
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span>◎</span>Alunos</button>
+          <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span>▷</span>Cursos</button>
         </nav>
       </div>
 
