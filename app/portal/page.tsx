@@ -7,7 +7,7 @@ type Band = "parada" | "esfriando" | "alta" | "insuficiente";
 type RiskState = "open" | "monitoring" | "none";
 type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "operations";
 type Theme = "light" | "dark";
-type OperationsMode = "sales" | "automations" | "community" | "golive";
+type OperationsMode = "finance" | "sales" | "automations" | "community" | "golive";
 
 type LeadStage = "Novos" | "Conversa" | "Proposta" | "Fechado";
 type Lead = {
@@ -232,7 +232,7 @@ export default function Home() {
   const [studentPreview, setStudentPreview] = useState(false);
   const [marketingMode, setMarketingMode] = useState<"pipeline" | "leads">("pipeline");
   const [leadQuery, setLeadQuery] = useState("");
-  const [operationsMode, setOperationsMode] = useState<OperationsMode>("sales");
+  const [operationsMode, setOperationsMode] = useState<OperationsMode>("finance");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -334,7 +334,7 @@ export default function Home() {
     setStudentPreview(false);
     setMarketingMode("pipeline");
     setLeadQuery("");
-    setOperationsMode("sales");
+    setOperationsMode("finance");
     setToast("Demonstração reiniciada.");
   }
 
@@ -377,11 +377,12 @@ export default function Home() {
           <span>Sails</span>
         </button>
         <nav aria-label="Navegação principal">
-          <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span aria-hidden="true">⌂</span> Cockpit</button>
+          <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span aria-hidden="true">⌂</span> Hoje</button>
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span aria-hidden="true">◎</span> Alunos <em>{openCases.length}</em></button>
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span aria-hidden="true">▷</span> Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span aria-hidden="true">◇</span> Marketing <em>{leads.filter((lead) => lead.stage === "Novos").length}</em></button>
-          <button className={view === "operations" ? "nav-active" : ""} onClick={() => navigate("operations")}><span aria-hidden="true">▦</span> Operação</button>
+          <button className={view === "operations" && operationsMode === "finance" ? "nav-active" : ""} onClick={() => { setOperationsMode("finance"); navigate("operations"); }}><span aria-hidden="true">$</span> Financeiro</button>
+          <button className={view === "operations" && operationsMode !== "finance" ? "nav-active" : ""} onClick={() => { setOperationsMode("sales"); navigate("operations"); }}><span aria-hidden="true">▦</span> Operação</button>
         </nav>
         <div className="sidebar-foot">
           <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
@@ -406,11 +407,17 @@ export default function Home() {
             <section className="page" aria-labelledby="cockpit-title">
               <div className="page-heading cockpit-heading">
                 <div>
-                  <p className="eyebrow">Segunda-feira · visão de retenção</p>
-                  <h1 id="cockpit-title">{openCases.length} alunos precisam de você hoje</h1>
-                  <p>Comece por quem acumula mais sinais de perda de ritmo.</p>
+                  <p className="eyebrow">Segunda-feira · sua jornada de hoje</p>
+                  <h1 id="cockpit-title">Bom dia, Diego.</h1>
+                  <p>Aqui está o que merece sua atenção.</p>
                 </div>
                 <span className="updated"><i /> Cenário-base · 20 jul 2026</span>
+              </div>
+
+              <div className="today-strip">
+                <article><span className="today-icon">●</span><div><small>PRÓXIMA SESSÃO · 19H</small><strong>Clínica de projetos</strong><p>48 confirmados · pauta pronta</p></div><button onClick={() => setToast("Sala e pauta abertas na demonstração.")}>Preparar encontro →</button></article>
+                <article><span className="today-icon care">!</span><div><small>CUIDADO PRIORITÁRIO</small><strong>{openCases.length} alunos pedem ação</strong><p>Rafael está sem atividade há 14 dias</p></div><button onClick={() => navigate("students")}>Ver alunos →</button></article>
+                <article><span className="today-icon money">$</span><div><small>NEGÓCIO HOJE · DEMO</small><strong>R$ 8.420 a receber</strong><p>3 pagamentos precisam de atenção</p></div><button onClick={() => { setOperationsMode("finance"); navigate("operations"); }}>Abrir financeiro →</button></article>
               </div>
 
               <div className="cockpit-grid">
@@ -639,12 +646,32 @@ export default function Home() {
             <section className="page operations-page" aria-labelledby="operations-title">
               <div className="page-heading operations-heading">
                 <div><p className="eyebrow">Sails · negócio conectado</p><h1 id="operations-title">Operação</h1><p>Venda, automatize a jornada e prepare a escola para crescer.</p></div>
-                <span className="launch-status"><i /> Pronto para piloto</span>
+                <span className="launch-status"><i /> Protótipo demonstrativo</span>
               </div>
 
               <div className="operations-tabs" role="tablist" aria-label="Áreas da operação">
-                {([['sales','Vendas'],['automations','Automações'],['community','Comunidade'],['golive','Go-live']] as const).map(([mode, label]) => <button key={mode} role="tab" aria-selected={operationsMode === mode} onClick={() => setOperationsMode(mode)}>{label}{mode === "golive" && <span>6</span>}</button>)}
+                {([['finance','Financeiro'],['sales','Vendas'],['automations','Automações'],['community','Comunidade'],['golive','Go-live']] as const).map(([mode, label]) => <button key={mode} role="tab" aria-selected={operationsMode === mode} onClick={() => setOperationsMode(mode)}>{label}{mode === "golive" && <span>6</span>}</button>)}
               </div>
+
+              {operationsMode === "finance" && <>
+                <div className="demo-data-note"><span>DEMO</span><p><strong>Dados financeiros demonstrativos.</strong> Nenhum pagamento, saldo ou transferência é real.</p><button onClick={() => setToast("Definições dos indicadores financeiros exibidas.")}>Ver definições</button></div>
+                <div className="finance-summary">
+                  <article><span>Receita líquida</span><strong>R$ 34.612</strong><small><b>↑ 14,2%</b> no período</small></article>
+                  <article><span>Saldo disponível</span><strong>R$ 18.940</strong><small>Próximo repasse · 23 jul</small></article>
+                  <article><span>A receber</span><strong>R$ 22.180</strong><small>Próximos 30 dias</small></article>
+                  <article><span>MRR</span><strong>R$ 12.870</strong><small><em>− R$ 594</em> churned MRR</small></article>
+                </div>
+                <div className="finance-subtabs" aria-label="Relatórios financeiros"><button aria-pressed="true">Visão geral</button><button onClick={() => setToast("Recebíveis filtrados na demonstração.")}>Recebíveis</button><button onClick={() => setToast("Transações exibidas abaixo.")}>Transações</button><button onClick={() => setToast("Assinaturas abertas na demonstração.")}>Assinaturas</button><button onClick={() => setToast("Repasses e conciliação abertos.")}>Repasses</button><button onClick={() => setToast("Fiscal e exportações abertos.")}>Fiscal</button></div>
+                <div className="finance-grid">
+                  <section className="operations-card cashflow-card"><div className="operations-card-head"><div><span className="section-kicker">Realizado x previsto</span><h2>Fluxo de caixa</h2></div><button className="text-button" onClick={() => setToast("Período financeiro alterado na demonstração.")}>Julho 2026⌄</button></div><div className="cashflow-legend"><span><i className="realized" />Realizado</span><span><i className="forecast" />Previsto</span></div><div className="cashflow-chart" aria-label="Gráfico demonstrativo de fluxo de caixa">{[34,48,43,62,58,72,67,82,76,91,84,96].map((height,index) => <div key={index}><i style={{height:`${height}%`}} /><b style={{height:`${Math.min(100,height+9)}%`}} /></div>)}</div><div className="chart-axis"><span>01 jul</span><span>08 jul</span><span>15 jul</span><span>22 jul</span><span>31 jul</span></div></section>
+                  <section className="operations-card breakdown-card"><span className="section-kicker">Composição da receita</span><h2>De R$ 42.400 vendidos</h2><dl><div><dt>Taxas de pagamento</dt><dd>− R$ 3.812</dd></div><div><dt>Afiliados e coprodução</dt><dd>− R$ 1.484</dd></div><div><dt>Reembolsos e disputas</dt><dd>− R$ 1.287</dd></div><div><dt>Impostos estimados</dt><dd>− R$ 1.205</dd></div><div className="total"><dt>Receita líquida</dt><dd>R$ 34.612</dd></div></dl><small>DRE gerencial · valide regras fiscais com a contabilidade.</small></section>
+                </div>
+                <div className="finance-lower-grid">
+                  <section className="operations-card receivables-card"><div className="operations-card-head"><div><span className="section-kicker">Agenda financeira</span><h2>Próximos recebíveis</h2></div><button className="text-button" onClick={() => setToast("Agenda completa aberta.")}>Ver agenda</button></div>{[['23 jul','R$ 8.420','14 transações','Pix e cartão'],['30 jul','R$ 6.780','11 transações','Cartão'],['15 ago','R$ 6.980','9 transações','Parcelado']].map((row) => <article key={row[0]}><time>{row[0]}</time><div><strong>{row[1]}</strong><small>{row[2]} · {row[3]}</small></div><span className="reconciled">Conciliado</span><button onClick={() => setToast(`Composição de ${row[0]} aberta.`)}>Ver composição →</button></article>)}</section>
+                  <section className="operations-card finance-alerts"><span className="section-kicker">Pede atenção</span><h2>Riscos financeiros</h2><button onClick={() => setToast("Cobranças em recuperação abertas.")}><span className="alert-dot danger">!</span><p><strong>3 pagamentos falharam</strong><small>R$ 1.287 em recuperação</small></p><em>→</em></button><button onClick={() => setToast("Notas pendentes abertas.")}><span className="alert-dot pending">2</span><p><strong>Notas aguardam emissão</strong><small>Reprocessar NFS-e</small></p><em>→</em></button><button onClick={() => setToast("Disputa aberta com prazo demonstrativo.")}><span className="alert-dot danger">1</span><p><strong>Disputa vence em 2 dias</strong><small>R$ 497 bloqueados</small></p><em>→</em></button></section>
+                </div>
+                <section className="operations-card transactions-card"><div className="operations-card-head"><div><span className="section-kicker">Razão transacional</span><h2>Movimentações recentes</h2></div><div><button className="button" onClick={() => setToast("Filtros financeiros abertos.")}>☷ Filtrar</button><button className="button" onClick={() => setToast("CSV demonstrativo preparado.")}>⇩ Exportar</button></div></div><div className="finance-table-wrap"><table className="finance-table"><thead><tr><th>Data</th><th>Transação</th><th>Cliente / produto</th><th>Bruto</th><th>Taxas & split</th><th>Líquido</th><th>Status</th><th /></tr></thead><tbody>{[['20 jul','SL-92841','Marina · Formação Dados & IA','R$ 2.490','− R$ 224','R$ 2.266','Aprovada'],['20 jul','SL-92840','Bruno · Clube SQL','R$ 297','− R$ 27','R$ 270','Aprovada'],['19 jul','SL-92832','Camila · Formação Dados & IA','R$ 2.490','—','—','Em análise'],['18 jul','RF-1028','Igor · Clube SQL','− R$ 297','− R$ 18','− R$ 315','Reembolso']].map((row) => <tr key={row[1]}><td>{row[0]}</td><td><strong>{row[1]}</strong></td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td><strong>{row[5]}</strong></td><td><span className={`transaction-status ${row[6] === 'Aprovada' ? 'approved' : row[6] === 'Reembolso' ? 'refunded' : 'review'}`}>{row[6]}</span></td><td><button onClick={() => setToast(`Linha do tempo de ${row[1]} aberta.`)}>→</button></td></tr>)}</tbody></table></div></section>
+              </>}
 
               {operationsMode === "sales" && <>
                 <div className="revenue-summary">
@@ -681,10 +708,11 @@ export default function Home() {
               </div>}
 
               {operationsMode === "golive" && <div className="golive-layout">
-                <section className="operations-card readiness-card"><div className="readiness-head"><div><span className="section-kicker">Checklist de lançamento</span><h2>Pronta para piloto. Ainda não para vendas reais.</h2><p>A experiência está completa; as conexões abaixo transformam a demonstração em operação.</p></div><div className="readiness-ring"><strong>8/14</strong><span>itens</span></div></div>
+                <section className="operations-card readiness-card"><div className="readiness-head"><div><span className="section-kicker">Checklist de lançamento</span><h2>Pronta para piloto. Ainda não para vendas reais.</h2><p>A experiência está completa; as conexões abaixo transformam a demonstração em operação.</p></div><div className="readiness-ring"><strong>4/10</strong><span>itens</span></div></div>
                   <div className="checklist-grid">
                     {[['✓','Marca, landing e domínio','Pronto'],['✓','Curso, vídeo e progresso','Pronto'],['✓','Funil, leads e retenção','Pronto'],['✓','Ofertas e jornadas desenhadas','Pronto'],['1','Login seguro e permissões','Conectar'],['2','Banco de dados e backups','Conectar'],['3','Vídeo protegido e legendas','Conectar'],['4','Checkout, Pix e recorrência','Conectar'],['5','E-mail transacional e marketing','Conectar'],['6','LGPD, termos e atendimento','Conectar']].map((item) => <article className={item[2] === 'Pronto' ? 'ready' : ''} key={item[1]}><span>{item[0]}</span><div><strong>{item[1]}</strong><small>{item[2]}</small></div></article>)}
                   </div>
+                  <div className="integration-center"><div><span className="section-kicker">Central de integrações</span><h3>Conexões de produção</h3></div><div className="integration-grid">{[['$','Pagamentos','Ação necessária'],['▶','Vídeo protegido','Ação necessária'],['✉','E-mail','Ação necessária'],['▣','Agenda & Meet','Não conectado'],['◉','WhatsApp','Não conectado'],['↻','Backups','Não conectado']].map((integration) => <button key={integration[1]} onClick={() => setToast(`${integration[1]} ainda não está conectado.`)}><span>{integration[0]}</span><p><strong>{integration[1]}</strong><small>{integration[2]}</small></p><em>→</em></button>)}</div></div>
                 </section>
                 <aside className="operations-card launch-plan"><span className="section-kicker">Ordem recomendada</span><h2>Do piloto ao go-live</h2><ol><li><span>01</span><p><strong>Infraestrutura</strong><small>Autenticação, dados, vídeo e backups.</small></p></li><li><span>02</span><p><strong>Receita</strong><small>Gateway, checkout, fiscal e recuperação.</small></p></li><li><span>03</span><p><strong>Confiança</strong><small>LGPD, suporte, monitoramento e contingência.</small></p></li></ol><button className="button primary wide" onClick={() => setToast("Plano de go-live priorizado na demonstração.")}>Priorizar conexões</button></aside>
               </div>}
@@ -698,6 +726,7 @@ export default function Home() {
                 <div className="student-line large"><span className="avatar large">{selected.initials}</span><div><p className="eyebrow">{selected.track}</p><h1 id="student-title">{selected.name}</h1><StatusBadge student={selected} /></div></div>
                 {selected.riskState === "open" && <button className="button primary" onClick={() => openCheckIn(selected)}>Fazer check-in</button>}
               </div>
+              <section className="mentorship-context" aria-label="Jornada de mentoria do aluno"><article><span>OBJETIVO DECLARADO</span><strong>Conquistar a primeira vaga em dados</strong><small>Definido no diagnóstico inicial</small></article><article><span>MARCO ATUAL</span><strong>Projeto de portfólio</strong><small>Dashboard publicado · revisão pendente</small></article><article><span>PRÓXIMO COMPROMISSO</span><strong>Revisar narrativa do projeto</strong><small>Até 23 de julho</small></article><article><span>PRÓXIMA SESSÃO</span><strong>Clínica de projetos · 23 jul</strong><small>19h · encontro coletivo</small></article></section>
               <p className="detail-note">A situação é calculada com atividade, entregas e ritmo. Um check-in não altera a chama imediatamente.</p>
               <div className="detail-grid">
                 <div>
@@ -717,11 +746,11 @@ export default function Home() {
         </main>
 
         <nav className="mobile-nav" aria-label="Navegação principal móvel">
-          <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span>⌂</span>Cockpit</button>
+          <button className={view === "cockpit" ? "nav-active" : ""} onClick={() => navigate("cockpit")}><span>⌂</span>Hoje</button>
           <button className={view === "students" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("students")}><span>◎</span>Alunos</button>
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span>▷</span>Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span>◇</span>Marketing</button>
-          <button className={view === "operations" ? "nav-active" : ""} onClick={() => navigate("operations")}><span>▦</span>Operação</button>
+          <button className={view === "operations" ? "nav-active" : ""} onClick={() => { setOperationsMode("finance"); navigate("operations"); }}><span>▦</span>Negócio</button>
         </nav>
       </div>
 
