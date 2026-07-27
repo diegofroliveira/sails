@@ -28,18 +28,18 @@ const structuredData = {
 };
 
 const caseBrands = [
-  { name: "MTE", detail: "Ministério do Trabalho e Emprego" },
-  { name: "LTM Fidelidade", detail: "LTM" },
+  { name: "MTE", image: "/brands/mte.jpg" },
+  { name: "Vertem Engagement", image: "/brands/vertem-engagement.webp", legacy: "anteriormente LTM" },
   { name: "Postal Saúde", image: "/brands/postal-saude.png" },
   { name: "Correios", image: "/brands/correios.svg" },
   { name: "Livelo", image: "/brands/livelo.svg" },
-  { name: "Norte Energia" },
+  { name: "Norte Energia", image: "/brands/norte-energia.png" },
   { name: "Vivo Fintech", image: "/brands/vivo.svg" },
   { name: "Mondelēz", image: "/brands/mondelez.jpg" },
   { name: "Vivo Telefônica", image: "/brands/telefonica.svg" },
   { name: "Banco do Brasil", image: "/brands/banco-do-brasil.svg" },
   { name: "Stanley", image: "/brands/stanley.png" },
-  { name: "Pague Menos", image: "/brands/pague-menos.svg" },
+  { name: "Pague Menos", image: "/brands/pague-menos.png" },
 ];
 
 export default function FromDataPage() {
@@ -75,7 +75,7 @@ export default function FromDataPage() {
 
         <section className="fd-company-proof" aria-labelledby="company-proof-title">
           <div className="fd-company-head"><span className="fd-kicker">CASES QUE FORMARAM MEU REPERTÓRIO</span><h2 id="company-proof-title">Problemas reais.<br />Contextos diferentes.<br />Direção que funciona.</h2><p>Você não está comprando acesso a logos. Está encurtando caminho com padrões, decisões e aprendizados construídos em cases de diferentes mercados e escalas.</p></div>
-          <div className="fd-logo-wall fd-case-wall">{caseBrands.map((company) => <article key={company.name}>{company.image ? <Image src={company.image} alt="" aria-hidden="true" width={190} height={72} unoptimized /> : <div className="fd-text-mark"><strong>{company.detail || company.name}</strong></div>}<span className="fd-brand-name">{company.name}</span></article>)}</div>
+          <div className="fd-logo-wall fd-case-wall">{caseBrands.map((company) => <article key={company.name}><div className="fd-logo-plate"><Image src={company.image} alt="" aria-hidden="true" width={190} height={72} unoptimized /></div><span className="fd-brand-name">{company.name}</span>{"legacy" in company && company.legacy ? <small className="fd-brand-legacy">{company.legacy}</small> : null}</article>)}</div>
           <p className="fd-case-closing">É esse repertório que entra na sala com você: menos teoria solta, mais leitura de contexto para escolher o próximo passo.</p>
         </section>
 

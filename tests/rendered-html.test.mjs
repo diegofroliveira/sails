@@ -60,6 +60,9 @@ test("server-renders the FROM DATA landing page", async () => {
   assert.match(html, /starts with a/);
   assert.match(html, /\+100/);
   assert.match(html, /Postal Saúde/);
+  assert.match(html, /Vertem Engagement/);
+  assert.match(html, /anteriormente LTM/);
+  assert.doesNotMatch(html, /LTM Fidelidade/);
   assert.match(html, /Banco do Brasil/);
   assert.match(html, /href="\/from-data\/agendar"/);
 });
