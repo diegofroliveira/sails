@@ -216,6 +216,186 @@ export type Database = {
           },
         ]
       }
+      business_expenses: {
+        Row: {
+          amount_minor: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          notes: string | null
+          occurred_on: string
+          organization_id: string
+          recurring: boolean
+          status: string
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          amount_minor: number
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          notes?: string | null
+          occurred_on: string
+          organization_id: string
+          recurring?: boolean
+          status?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          amount_minor?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          notes?: string | null
+          occurred_on?: string
+          organization_id?: string
+          recurring?: boolean
+          status?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_expenses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_accounts: {
+        Row: {
+          acquisition_source: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          health_score: number | null
+          id: string
+          organization_id: string
+          phone: string | null
+          status: string
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          acquisition_source?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          health_score?: number | null
+          id?: string
+          organization_id: string
+          phone?: string | null
+          status?: string
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acquisition_source?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          health_score?: number | null
+          id?: string
+          organization_id?: string
+          phone?: string | null
+          status?: string
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_accounts_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_contracts: {
+        Row: {
+          amount_minor: number
+          client_account_id: string
+          contract_number: string
+          created_at: string
+          ends_on: string | null
+          id: string
+          organization_id: string
+          payment_terms: string | null
+          service_id: string
+          signed_at: string | null
+          starts_on: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          client_account_id: string
+          contract_number: string
+          created_at?: string
+          ends_on?: string | null
+          id?: string
+          organization_id: string
+          payment_terms?: string | null
+          service_id: string
+          signed_at?: string | null
+          starts_on: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          client_account_id?: string
+          contract_number?: string
+          created_at?: string
+          ends_on?: string | null
+          id?: string
+          organization_id?: string
+          payment_terms?: string | null
+          service_id?: string
+          signed_at?: string | null
+          starts_on?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contracts_client_account_id_fkey"
+            columns: ["client_account_id"]
+            isOneToOne: false
+            referencedRelation: "client_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contracts_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "service_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commitments: {
         Row: {
           completed_at: string | null
@@ -1418,6 +1598,139 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receivables: {
+        Row: {
+          amount_minor: number
+          client_account_id: string
+          contract_id: string | null
+          created_at: string
+          description: string
+          due_on: string
+          id: string
+          organization_id: string
+          paid_amount_minor: number
+          paid_at: string | null
+          payment_method: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          client_account_id: string
+          contract_id?: string | null
+          created_at?: string
+          description: string
+          due_on: string
+          id?: string
+          organization_id: string
+          paid_amount_minor?: number
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          client_account_id?: string
+          contract_id?: string | null
+          created_at?: string
+          description?: string
+          due_on?: string
+          id?: string
+          organization_id?: string
+          paid_amount_minor?: number
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receivables_client_account_id_fkey"
+            columns: ["client_account_id"]
+            isOneToOne: false
+            referencedRelation: "client_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receivables_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "client_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receivables_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_catalog: {
+        Row: {
+          billing_type: string
+          category: string
+          created_at: string
+          deliverables: Json
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          price_minor: number
+          product_id: string | null
+          status: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          billing_type?: string
+          category: string
+          created_at?: string
+          deliverables?: Json
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          price_minor?: number
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          billing_type?: string
+          category?: string
+          created_at?: string
+          deliverables?: Json
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          price_minor?: number
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_catalog_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]

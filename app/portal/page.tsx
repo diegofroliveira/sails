@@ -6,10 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import AgendaView from "./AgendaView";
+import BusinessView from "./BusinessView";
 
 type Band = "parada" | "esfriando" | "alta" | "insuficiente";
 type RiskState = "open" | "monitoring" | "none";
-type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "agenda" | "operations";
+type View = "cockpit" | "students" | "detail" | "courses" | "course-builder" | "marketing" | "agenda" | "business" | "operations";
 type Theme = "light" | "dark";
 type OperationsMode = "finance" | "sales" | "automations" | "community" | "branding" | "golive";
 
@@ -451,8 +452,7 @@ export default function Home() {
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span aria-hidden="true">▷</span> Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span aria-hidden="true">◇</span> Marketing <em>{leads.filter((lead) => lead.stage === "Novos").length}</em></button>
           <button className={view === "agenda" ? "nav-active" : ""} onClick={() => navigate("agenda")}><span aria-hidden="true">▣</span> Agenda</button>
-          <button className={view === "operations" && operationsMode === "finance" ? "nav-active" : ""} onClick={() => { setOperationsMode("finance"); navigate("operations"); }}><span aria-hidden="true">$</span> Financeiro</button>
-          <button className={view === "operations" && operationsMode !== "finance" ? "nav-active" : ""} onClick={() => { setOperationsMode("sales"); navigate("operations"); }}><span aria-hidden="true">▦</span> Operação</button>
+          <button className={view === "business" ? "nav-active" : ""} onClick={() => navigate("business")}><span aria-hidden="true">▦</span> Negócio</button>
         </nav>
         <div className="sidebar-foot">
           <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
@@ -714,6 +714,7 @@ export default function Home() {
           )}
 
           {view === "agenda" && <AgendaView onToast={setToast} />}
+          {view === "business" && <BusinessView onToast={setToast} />}
 
           {view === "operations" && (
             <section className="page operations-page" aria-labelledby="operations-title">
@@ -848,7 +849,7 @@ export default function Home() {
           <button className={view === "courses" || view === "course-builder" ? "nav-active" : ""} onClick={() => navigate("courses")}><span>▷</span>Cursos</button>
           <button className={view === "marketing" ? "nav-active" : ""} onClick={() => navigate("marketing")}><span>◇</span>Marketing</button>
           <button className={view === "agenda" ? "nav-active" : ""} onClick={() => navigate("agenda")}><span>▣</span>Agenda</button>
-          <button className={view === "operations" ? "nav-active" : ""} onClick={() => { setOperationsMode("finance"); navigate("operations"); }}><span>▦</span>Negócio</button>
+          <button className={view === "business" ? "nav-active" : ""} onClick={() => navigate("business")}><span>▦</span>Negócio</button>
         </nav>
       </div>
 

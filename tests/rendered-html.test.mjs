@@ -46,8 +46,8 @@ test("server-renders the platform portal", async () => {
   assert.match(html, /Bom dia, Diego/);
   assert.match(html, /Cursos/);
   assert.match(html, /Marketing/);
-  assert.match(html, /Financeiro/);
   assert.match(html, /Agenda/);
+  assert.match(html, /Negócio/);
 });
 
 test("server-renders the FROM DATA landing page", async () => {
