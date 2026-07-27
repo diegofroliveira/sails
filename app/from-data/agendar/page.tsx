@@ -2,37 +2,40 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type AvailableSlot = { starts_at: string; ends_at: string };
+type Slot = { starts_at: string; ends_at: string };
 
-function nextBookableDate() {
-  const date = new Date();
-  date.setHours(12, 0, 0, 0);
-  for (let offset = 1; offset <= 14; offset += 1) {
-    const candidate = new Date(date);
-    candidate.setDate(date.getDate() + offset);
-    if ([2, 4].includes(candidate.getDay())) return candidate.toISOString().slice(0, 10);
-  }
-  return "";
+function upcomingDates() {
+  const brazilNow = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const start = new Date(Date.UTC(brazilNow.getUTCFullYear(), brazilNow.getUTCMonth(), brazilNow.getUTCDate()));
+  return Array.from({ length: 21 }, (_, index) => {
+    const value = new Date(start);
+    value.setUTCDate(value.getUTCDate() + index + 1);
+    return value.toISOString().slice(0, 10);
+  });
 }
 
-function slotLabel(startsAt: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(startsAt));
+function labelForDate(date: string) {
+  return new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "2-digit", month: "short", timeZone: "UTC" })
+    .format(new Date(`${date}T12:00:00Z`))
+    .replace(".", "");
+}
+
+function timeForSlot(slot: string) {
+  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Sao_Paulo" }).format(new Date(slot));
 }
 
 export default function FromDataBookingPage() {
+  const [dates] = useState(() => upcomingDates());
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [date, setDate] = useState(nextBookableDate);
-  const [selectedStart, setSelectedStart] = useState("");
-  const [slots, setSlots] = useState<AvailableSlot[]>([]);
-  const [slotsLoading, setSlotsLoading] = useState(true);
+  const [date, setDate] = useState(dates[0]);
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [checkingSlots, setCheckingSlots] = useState(true);
+  const [checkedCalendars, setCheckedCalendars] = useState(0);
   const [role, setRole] = useState("");
   const [level, setLevel] = useState("Transição de carreira");
   const [goal, setGoal] = useState("");
@@ -43,49 +46,54 @@ export default function FromDataBookingPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   useEffect(() => {
-    let active = true;
-    async function loadSlots() {
-      setSlotsLoading(true);
-      setError("");
-      const supabase = createSupabaseBrowserClient();
-      const { data, error: slotsError } = await supabase.rpc("get_from_data_available_slots", { p_date: date });
-      if (!active) return;
-      if (slotsError) {
+    const controller = new AbortController();
+    fetch(`/api/availability/from-data?date=${date}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("availability");
+        return response.json() as Promise<{ slots: Slot[]; checkedCalendars: number }>;
+      })
+      .then((payload) => {
+        setSlots(payload.slots);
+        setCheckedCalendars(payload.checkedCalendars);
+        setSelectedSlot(payload.slots[0]?.starts_at || "");
+      })
+      .catch((requestError) => {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") return;
         setSlots([]);
-        setSelectedStart("");
-        setError("Não foi possível consultar a agenda. Tente novamente.");
-      } else {
-        const available = data ?? [];
-        setSlots(available);
-        setSelectedStart(available[0]?.starts_at ?? "");
-      }
-      setSlotsLoading(false);
-    }
-    if (date) void loadSlots();
-    return () => { active = false; };
+        setError("Não foi possível consultar a agenda agora. Tente novamente em instantes.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCheckingSlots(false);
+      });
+    return () => controller.abort();
   }, [date]);
+
+  function chooseDate(nextDate: string) {
+    setDate(nextDate);
+    setCheckingSlots(true);
+    setSelectedSlot("");
+    setError("");
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!selectedSlot) {
+      setError("Escolha um horário disponível.");
+      return;
+    }
     if (!privacyConsent) {
       setError("Confirme o consentimento de privacidade para continuar.");
       return;
     }
-    if (!selectedStart) {
-      setError("Escolha uma data com horário disponível.");
-      return;
-    }
-
     setLoading(true);
     setError("");
     const supabase = createSupabaseBrowserClient();
     const { error: bookingError } = await supabase.rpc("request_from_data_brief_call", {
       p_name: name,
       p_email: email,
-      p_starts_at: selectedStart,
+      p_starts_at: selectedSlot,
       p_career_role: role,
       p_experience_level: level,
       p_career_goal: goal,
@@ -93,17 +101,11 @@ export default function FromDataBookingPage() {
       p_weekly_hours: hours,
       p_ai_consent: aiConsent,
     });
-
     if (bookingError) {
-      setError(
-        bookingError.message.includes("disponível") || bookingError.message.includes("agendamento")
-          ? "Este horário não está mais disponível. Escolha outro horário."
-          : "Não foi possível solicitar a call. Revise os dados e tente novamente.",
-      );
+      setError(bookingError.message.includes("disponível") || bookingError.message.includes("possui") ? "Esse horário acabou de ser reservado. Escolha outro slot." : "Não foi possível solicitar a call. Revise os dados e tente novamente.");
       setLoading(false);
       return;
     }
-
     setSuccess(true);
     setLoading(false);
   }
@@ -111,46 +113,24 @@ export default function FromDataBookingPage() {
   return <main className="fd-booking-page">
     <section className="fd-booking-context">
       <Link href="/from-data"><Image src="/from-data-logo.png" alt="FROM DATA" width={180} height={180} priority /></Link>
-      <div>
-        <span>BRIEF CALL · 30 MINUTOS</span>
-        <h1>Antes da call,<br />começamos pelo seu <em>FROM.</em></h1>
-        <p>Estas respostas ajudam Diego a chegar à conversa entendendo seu momento e a preparar uma primeira hipótese de plano.</p>
-      </div>
-      <ol>
-        <li><span>01</span>Você compartilha o contexto</li>
-        <li><span>02</span>A call aprofunda o diagnóstico</li>
-        <li><span>03</span>Diego revisa o plano sugerido</li>
-      </ol>
+      <div><span>BRIEF CALL · 30 MINUTOS</span><h1>Antes da call,<br />começamos pelo seu <em>FROM.</em></h1><p>Estas respostas ajudam Diego a chegar à conversa entendendo seu momento e a preparar uma primeira hipótese de plano.</p></div>
+      <ol><li><span>01</span>Você escolhe um horário realmente livre</li><li><span>02</span>A call aprofunda o diagnóstico</li><li><span>03</span>Diego revisa o plano sugerido</li></ol>
       <small>Seus dados não são vendidos. A IA só processa o briefing com consentimento explícito.</small>
     </section>
-
     <section className="fd-booking-form-wrap">
-      {success ? <div className="fd-booking-success">
-        <span>QUERY EXECUTED</span>
-        <h2>Brief call solicitada.</h2>
-        <p>Seu contexto já está na FROM DATA. Diego confirmará o horário e, após a conexão do Google Agenda, você receberá o convite com Google Meet.</p>
-        <div>
-          <strong>{date.split("-").reverse().join("/")} · {slotLabel(selectedStart)}</strong>
-          <small>Horário de Brasília</small>
+      {success ? <div className="fd-booking-success"><span>QUERY EXECUTED</span><h2>Brief call solicitada.</h2><p>Seu contexto já está na FROM DATA. Diego confirmará o horário e você receberá o convite com Google Meet.</p><div><strong>{labelForDate(date)} · {timeForSlot(selectedSlot)}</strong><small>Horário de Brasília</small></div><Link href="/from-data">Voltar para FROM DATA</Link></div> :
+      <form onSubmit={submit}>
+        <span className="fd-kicker">SEU PONTO DE PARTIDA</span><h2>Conte sobre o seu momento.</h2>
+        <div className="fd-slot-picker">
+          <div className="fd-slot-title"><div><strong>1. Escolha o dia</strong><small>Próximos 21 dias</small></div><span>{checkedCalendars > 0 ? `${checkedCalendars} agendas cruzadas` : "Disponibilidade FROM DATA"}</span></div>
+          <div className="fd-date-strip">{dates.map((item) => <button type="button" key={item} aria-pressed={date === item} onClick={() => chooseDate(item)}><span>{labelForDate(item).split(" ")[0]}</span><strong>{labelForDate(item).split(" ").slice(1).join(" ")}</strong></button>)}</div>
+          <div className="fd-slot-title"><div><strong>2. Escolha um horário</strong><small>Horário de Brasília</small></div></div>
+          <div className="fd-time-slots" aria-live="polite">{checkingSlots ? <p>Consultando agendas...</p> : slots.length ? slots.map((slot) => <button type="button" key={slot.starts_at} aria-pressed={selectedSlot === slot.starts_at} onClick={() => setSelectedSlot(slot.starts_at)}>{timeForSlot(slot.starts_at)}</button>) : <p>Nenhum horário livre neste dia. Escolha outra data.</p>}</div>
+          <small className="fd-conflict-note"><span>✓</span> Só mostramos slots livres na janela de atendimento e nas agendas conectadas.</small>
         </div>
-        <Link href="/from-data">Voltar para FROM DATA</Link>
-      </div> : <form onSubmit={submit}>
-        <span className="fd-kicker">SEU PONTO DE PARTIDA</span>
-        <h2>Conte sobre o seu momento.</h2>
         <div className="fd-booking-grid">
           <label><span>Nome completo</span><input value={name} onChange={(event) => setName(event.target.value)} required /></label>
           <label><span>E-mail</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
-          <label><span>Data</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} min={today} required /></label>
-          <label>
-            <span>Horário disponível</span>
-            <select value={selectedStart} onChange={(event) => setSelectedStart(event.target.value)} disabled={slotsLoading || slots.length === 0} required>
-              {slotsLoading
-                ? <option>Consultando agenda...</option>
-                : slots.length === 0
-                  ? <option>Nenhum horário nesta data</option>
-                  : slots.map((slot) => <option key={slot.starts_at} value={slot.starts_at}>{slotLabel(slot.starts_at)}</option>)}
-            </select>
-          </label>
           <label><span>Cargo ou momento atual</span><input value={role} onChange={(event) => setRole(event.target.value)} placeholder="Ex.: Analista de BI" /></label>
           <label><span>Experiência</span><select value={level} onChange={(event) => setLevel(event.target.value)}><option>Transição de carreira</option><option>Iniciante</option><option>Júnior</option><option>Pleno</option></select></label>
           <label className="full"><span>Qual é o seu objetivo de carreira?</span><textarea value={goal} onChange={(event) => setGoal(event.target.value)} minLength={10} required /></label>
@@ -160,8 +140,8 @@ export default function FromDataBookingPage() {
         <label className="fd-consent"><input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} /><span>Autorizo o uso do briefing para gerar uma sugestão de plano com IA. O conteúdo só será compartilhado após revisão humana.</span></label>
         <label className="fd-consent"><input type="checkbox" checked={privacyConsent} onChange={(event) => setPrivacyConsent(event.target.checked)} /><span>Li e concordo com o tratamento dos dados para organização da brief call e acompanhamento da mentoria.</span></label>
         {error && <div className="fd-booking-error" role="alert">{error}</div>}
-        <button type="submit" disabled={loading || slotsLoading || !selectedStart}>{loading ? "Enviando briefing..." : "Solicitar brief call →"}</button>
-        <small>O horário será confirmado por Diego. Nenhuma cobrança é feita nesta etapa.</small>
+        <button type="submit" disabled={loading || !selectedSlot}>{loading ? "Enviando briefing..." : "Solicitar brief call →"}</button>
+        <small>Nenhuma cobrança é feita nesta etapa.</small>
       </form>}
     </section>
   </main>;

@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 const ORGANIZATION_ID = "df67d7ba-c5e5-4d51-b76f-40bf4052eee3";
 
 type MeetingKind = "brief_call" | "mentoring" | "live";
+type GoogleCalendar = { id: string; summary: string; primary?: boolean; backgroundColor?: string; accessRole?: string };
 type ActionPlan = {
   objective: string;
   diagnosisSummary: string;
@@ -44,12 +45,57 @@ export default function AgendaView({ onToast }: { onToast: (message: string) => 
   const [saving, setSaving] = useState(false);
   const [plan, setPlan] = useState<ActionPlan | null>(null);
   const [upcoming, setUpcoming] = useState(initialUpcoming);
+  const [calendarSettingsOpen, setCalendarSettingsOpen] = useState(false);
+  const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
+  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
+  const [bookingCalendarId, setBookingCalendarId] = useState("primary");
+  const [calendarLoading, setCalendarLoading] = useState(false);
 
   const selected = meetingDetails[kind];
   const formattedDate = useMemo(() => {
     const [year, month, day] = date.split("-");
     return `${day}/${month}/${year}`;
   }, [date]);
+
+  async function openCalendarSettings() {
+    setCalendarLoading(true);
+    const supabase = createSupabaseBrowserClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.assign("/login");
+      return;
+    }
+    const response = await fetch("/api/google-calendar/calendars", { headers: { Authorization: `Bearer ${session.access_token}` } });
+    if (!response.ok) {
+      window.location.assign("/api/google-calendar/connect");
+      return;
+    }
+    const payload = await response.json() as { calendars: GoogleCalendar[]; selectedCalendarIds: string[]; bookingCalendarId: string };
+    setCalendars(payload.calendars);
+    setSelectedCalendarIds(payload.selectedCalendarIds);
+    setBookingCalendarId(payload.bookingCalendarId);
+    setCalendarSettingsOpen(true);
+    setCalendarLoading(false);
+  }
+
+  async function saveCalendarSettings() {
+    setCalendarLoading(true);
+    const supabase = createSupabaseBrowserClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const response = await fetch("/api/google-calendar/calendars", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ selectedCalendarIds, bookingCalendarId }),
+    });
+    setCalendarLoading(false);
+    if (!response.ok) {
+      onToast("Não foi possível salvar as agendas selecionadas.");
+      return;
+    }
+    setCalendarSettingsOpen(false);
+    onToast(`${selectedCalendarIds.length} agenda${selectedCalendarIds.length === 1 ? "" : "s"} serão verificadas antes de exibir cada slot.`);
+  }
 
   async function schedule(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -157,7 +203,7 @@ export default function AgendaView({ onToast }: { onToast: (message: string) => 
     <section className="page fd-agenda-page" aria-labelledby="agenda-title">
       <div className="page-heading fd-agenda-heading">
         <div><p className="eyebrow">FROM DATA · agenda conectada</p><h1 id="agenda-title">Calls, mentorias e lives.</h1><p>Um calendário para a jornada inteira — do primeiro diagnóstico ao próximo salto.</p></div>
-        <div className="calendar-connection"><span className="google-g">G</span><div><strong>Google Agenda</strong><small>OAuth seguro</small></div><button onClick={() => window.location.assign("/api/google-calendar/connect")}>Conectar</button></div>
+        <div className="calendar-connection"><span className="google-g">G</span><div><strong>Google Agenda</strong><small>Conflitos + slots livres</small></div><button onClick={openCalendarSettings} disabled={calendarLoading}>{calendarLoading ? "Abrindo..." : "Configurar"}</button></div>
       </div>
 
       <div className="fd-agenda-summary">
@@ -166,6 +212,12 @@ export default function AgendaView({ onToast }: { onToast: (message: string) => 
         <article><span>BRIEFS RECEBIDOS</span><strong>4/5</strong><small>um pendente</small></article>
         <article><span>PLANOS EM REVISÃO</span><strong>3</strong><small>aprovação humana</small></article>
       </div>
+
+      {calendarSettingsOpen && <section className="operations-card fd-calendar-settings">
+        <div className="operations-card-head"><div><span className="section-kicker">Disponibilidade conectada</span><h2>Quais agendas bloqueiam horários?</h2><p>Marque todas que devem ser consultadas. Eventos privados aparecem apenas como ocupado.</p></div><button className="button" onClick={() => setCalendarSettingsOpen(false)}>Fechar</button></div>
+        <div className="fd-calendar-list">{calendars.map((calendar) => <label key={calendar.id}><input type="checkbox" checked={selectedCalendarIds.includes(calendar.id)} onChange={(event) => setSelectedCalendarIds((current) => event.target.checked ? [...new Set([...current, calendar.id])] : current.filter((id) => id !== calendar.id))} /><i style={{ background: calendar.backgroundColor || "#06b6d4" }} /><span><strong>{calendar.summary}</strong><small>{calendar.primary ? "Agenda principal" : calendar.accessRole === "owner" ? "Sua agenda" : "Agenda compartilhada"}</small></span></label>)}</div>
+        <div className="fd-booking-calendar"><label><span>Criar novos encontros em</span><select value={bookingCalendarId} onChange={(event) => setBookingCalendarId(event.target.value)}>{calendars.filter((calendar) => ["owner", "writer"].includes(calendar.accessRole || "") || calendar.primary).map((calendar) => <option key={calendar.id} value={calendar.id}>{calendar.summary}</option>)}</select></label><button className="button primary" onClick={saveCalendarSettings} disabled={calendarLoading || selectedCalendarIds.length === 0}>{calendarLoading ? "Salvando..." : "Salvar agendas"}</button></div>
+      </section>}
 
       <div className="fd-agenda-layout">
         <div className="fd-agenda-main">

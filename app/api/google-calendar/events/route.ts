@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
   }
 
   const meetingType = appointment.meeting_types as unknown as { name: string; kind: string } | null;
-  const eventResponse = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all", {
+  const { data: connection } = await admin.from("integration_connections").select("configuration").eq("organization_id", ORGANIZATION_ID).eq("provider", "google_calendar").maybeSingle();
+  const configuration = (connection?.configuration || {}) as { booking_calendar_id?: string };
+  const bookingCalendarId = configuration.booking_calendar_id || "primary";
+  const eventResponse = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(bookingCalendarId)}/events?conferenceDataVersion=1&sendUpdates=all`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({

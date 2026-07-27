@@ -5,10 +5,17 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "FROM DATA — Mentoria para acelerar sua carreira em Dados",
   description: "Projetos reais, direção individual e uma jornada clara para transformar conhecimento em carreira em Dados.",
+  robots: { index: true, follow: true },
   openGraph: {
     title: "FROM DATA — Every career starts with a FROM",
     description: "Mentoria premium para profissionais de Dados e pessoas em transição de carreira.",
-    images: ["/from-data-logo.png"],
+    images: [{ url: "/from-data-og.png", alt: "FROM DATA — Every career starts with a FROM" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FROM DATA — Every career starts with a FROM",
+    description: "Mentoria para acelerar sua carreira em Dados.",
+    images: ["/from-data-og.png"],
   },
 };
 
@@ -20,13 +27,31 @@ const structuredData = {
   founder: { "@type": "Person", name: "Diego Oliveira" },
 };
 
+const careerCompanies = [
+  { name: "MTE", detail: "Ministério do Trabalho e Emprego" },
+  { name: "LTM", detail: "LTM Fidelidade" },
+  { name: "Postal Saúde", image: "/brands/postal-saude.png" },
+  { name: "Correios", image: "/brands/correios.svg" },
+  { name: "Livelo", image: "/brands/livelo.svg" },
+  { name: "Norte Energia", detail: "Norte Energia" },
+  { name: "Vivo Fintech", image: "/brands/vivo.svg" },
+  { name: "Mondelēz", image: "/brands/mondelez.jpg" },
+  { name: "Vivo Telefônica", image: "/brands/telefonica.svg" },
+];
+
+const projectCompanies = [
+  { name: "Banco do Brasil", image: "/brands/banco-do-brasil.svg" },
+  { name: "Stanley", image: "/brands/stanley.png" },
+  { name: "Pague Menos", image: "/brands/pague-menos.svg" },
+];
+
 export default function FromDataPage() {
   return (
     <div className="from-data-site">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <header className="fd-site-header">
         <Link href="/from-data" aria-label="FROM DATA — início"><Image src="/from-data-logo.png" alt="FROM DATA" width={150} height={150} priority /></Link>
-        <nav><a href="#metodo">Método</a><a href="#jornada">Jornada</a><a href="#para-quem">Para quem</a></nav>
+        <nav><a href="#experiencia">Experiência</a><a href="#metodo">Método</a><a href="#jornada">Jornada</a><a href="#para-quem">Para quem</a></nav>
         <Link className="fd-outline-cta" href="/from-data/agendar">Agendar brief call</Link>
       </header>
 
@@ -38,6 +63,31 @@ export default function FromDataPage() {
         </section>
 
         <section className="fd-proof"><div><strong>01</strong><span>Diagnóstico individual</span></div><div><strong>02</strong><span>Projetos com contexto real</span></div><div><strong>03</strong><span>Feedback direto</span></div><div><strong>04</strong><span>Plano de carreira acionável</span></div></section>
+
+        <section className="fd-authority" id="experiencia">
+          <div className="fd-authority-intro">
+            <span className="fd-kicker">EXPERIÊNCIA QUE NÃO CABE EM SLIDES</span>
+            <h2>A IA melhora<br />a cada erro.<br /><em>Você também.</em></h2>
+            <div className="fd-process-count"><strong>+100</strong><span>processos vividos<br />na prática</span></div>
+          </div>
+          <div className="fd-authority-copy">
+            <p>Você não precisa cometer todos os erros para aprender com eles. Na FROM DATA, cada orientação parte de decisões, entregas, contextos e desafios que já aconteceram no mundo real.</p>
+            <blockquote>Aprenda com quem já atravessou mais de 100 processos — e transformou cada acerto e cada erro em repertório para encurtar o seu caminho.</blockquote>
+          </div>
+        </section>
+
+        <section className="fd-company-proof" aria-labelledby="company-proof-title">
+          <div className="fd-company-head"><span className="fd-kicker">REPERTÓRIO DE MERCADO</span><h2 id="company-proof-title">Experiência construída<br />em diferentes contextos.</h2><p>Organizações onde atuei profissionalmente e marcas atendidas em projetos. Cada contexto trouxe problemas, escalas e aprendizados diferentes.</p></div>
+          <div className="fd-company-group">
+            <div className="fd-company-label"><span>01</span><div><strong>Experiência profissional</strong><small>Empresas e organizações onde atuei</small></div></div>
+            <div className="fd-logo-wall">{careerCompanies.map((company) => <article key={company.name}>{company.image ? <Image src={company.image} alt={`Logo ${company.name}`} width={180} height={70} /> : <div className="fd-text-mark"><strong>{company.name}</strong><small>{company.detail}</small></div>}</article>)}</div>
+          </div>
+          <div className="fd-company-group projects">
+            <div className="fd-company-label"><span>02</span><div><strong>Projetos e atuações pontuais</strong><small>Marcas atendidas em trabalhos específicos</small></div></div>
+            <div className="fd-logo-wall project-logos">{projectCompanies.map((company) => <article key={company.name}><Image src={company.image} alt={`Logo ${company.name}`} width={180} height={70} /></article>)}</div>
+          </div>
+          <small className="fd-trademark-note">As marcas e logotipos pertencem aos seus respectivos titulares. A menção indica contexto de experiência profissional ou atuação em projetos, não vínculo comercial atual com a FROM DATA.</small>
+        </section>
 
         <section className="fd-method" id="metodo">
           <div className="fd-section-copy"><span className="fd-kicker">THE FROM FRAMEWORK</span><h2>Sua carreira também<br />pode ser consultada.</h2><p>Um método que parte da sua realidade, conecta prática e posicionamento e mede evolução com evidências — não com promessas.</p></div>

@@ -58,6 +58,9 @@ test("server-renders the FROM DATA landing page", async () => {
   assert.match(html, /FROM DATA/);
   assert.match(html, /Every career/);
   assert.match(html, /starts with a/);
+  assert.match(html, /\+100/);
+  assert.match(html, /Postal Saúde/);
+  assert.match(html, /Banco do Brasil/);
   assert.match(html, /href="\/from-data\/agendar"/);
 });
 
@@ -68,7 +71,7 @@ test("server-renders the FROM DATA booking briefing", async () => {
   const html = await response.text();
   assert.match(html, /BRIEF CALL/i);
   assert.match(html, /Conte sobre o seu momento/);
-  assert.match(html, /Horário disponível/);
+  assert.match(html, /Escolha um hor/);
   assert.match(html, /Consultando agenda/);
   assert.match(html, /Solicitar brief call/);
 });
