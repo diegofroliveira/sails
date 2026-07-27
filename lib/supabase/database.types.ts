@@ -1902,6 +1902,28 @@ export type Database = {
         }
         Returns: string
       }
+      request_from_data_quick_call: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_phone: string
+          p_starts_at: string
+        }
+        Returns: string
+      }
+      save_from_data_optional_briefing: {
+        Args: {
+          p_ai_consent: boolean
+          p_appointment_id: string
+          p_career_goal: string
+          p_career_role: string
+          p_current_challenge: string
+          p_email: string
+          p_experience_level: string
+          p_weekly_hours: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "finance" | "mentor" | "support" | "student"

@@ -64,12 +64,12 @@ export default function FromDataPage() {
         <section className="fd-authority" id="experiencia">
           <div className="fd-authority-intro">
             <span className="fd-kicker">EXPERIÊNCIA QUE NÃO CABE EM SLIDES</span>
-            <h2>A IA melhora<br />a cada erro.<br /><em>Você também.</em></h2>
+            <h2>A IA evolui quando<br />aprende com os erros.<br /><em>Você não precisa cometer todos eles.</em></h2>
             <div className="fd-process-count"><strong>+100</strong><span>processos vividos<br />na prática</span></div>
           </div>
           <div className="fd-authority-copy">
-            <p>Você não precisa cometer todos os erros para aprender com eles. Na FROM DATA, cada orientação parte de decisões, entregas, contextos e desafios que já aconteceram no mundo real.</p>
-            <blockquote>Aprenda com quem já atravessou mais de 100 processos — e transformou cada acerto e cada erro em repertório para encurtar o seu caminho.</blockquote>
+            <p>Aprenda com quem já viveu mais de 100 processos. Cada orientação parte de decisões, entregas, acertos e erros que já aconteceram no mundo real.</p>
+            <blockquote>Transformei decisões, acertos e erros reais em repertório para encurtar o caminho da sua carreira em Dados.</blockquote>
           </div>
         </section>
 

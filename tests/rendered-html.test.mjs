@@ -64,24 +64,24 @@ test("server-renders the FROM DATA landing page", async () => {
   assert.match(html, /anteriormente LTM/);
   assert.doesNotMatch(html, /LTM Fidelidade/);
   assert.match(html, /Banco do Brasil/);
+  assert.match(html, /A IA evolui quando/);
+  assert.match(html, /Você não precisa cometer todos eles/);
   assert.match(html, /from-data-wordmark\.png/);
   assert.doesNotMatch(html, /from-data-logo\.png/);
   assert.match(html, /href="\/from-data\/agendar"/);
 });
 
-test("server-renders the FROM DATA booking briefing", async () => {
+test("server-renders the progressive FROM DATA conversation flow", async () => {
   const response = await render("/from-data/agendar");
   assert.equal(response.status, 200);
 
   const html = await response.text();
   assert.match(html, /BRIEF CALL/i);
-  assert.match(html, /Conte sobre o seu momento/);
+  assert.match(html, /Como você prefere começar/);
   assert.match(html, /from-data-wordmark\.png/);
   assert.doesNotMatch(html, /from-data-logo\.png/);
-  assert.match(html, /Escolha um hor/);
-  assert.match(html, /Consultando agenda/);
-  assert.match(html, /Agendar brief call/);
+  assert.match(html, /Agendar uma conversa/);
+  assert.match(html, /Falar pelo WhatsApp/);
   assert.match(html, /Voltar para a página/);
-  assert.match(html, /Prefiro continuar pelo WhatsApp/);
-  assert.match(html, /WhatsApp com DDD/);
+  assert.match(html, /Leva menos de um minuto/);
 });
