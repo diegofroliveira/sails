@@ -31,6 +31,7 @@ export default function FromDataBookingPage() {
   const [dates] = useState(() => upcomingDates());
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [date, setDate] = useState(dates[0]);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState("");
@@ -44,6 +45,8 @@ export default function FromDataBookingPage() {
   const [aiConsent, setAiConsent] = useState(true);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingWhatsApp, setLoadingWhatsApp] = useState(false);
+  const [whatsAppSaved, setWhatsAppSaved] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
@@ -77,6 +80,44 @@ export default function FromDataBookingPage() {
     setError("");
   }
 
+  async function captureLead(source: "from-data-booking" | "from-data-whatsapp") {
+    const supabase = createSupabaseBrowserClient();
+    const { error: leadError } = await supabase.rpc("capture_from_data_lead", {
+      p_name: name,
+      p_email: email,
+      p_phone: phone,
+      p_source: source,
+    });
+    if (leadError) throw leadError;
+  }
+
+  async function continueOnWhatsApp() {
+    if (name.trim().length < 2 || !email.includes("@") || phone.replace(/\D/g, "").length < 10) {
+      setError("Preencha nome, e-mail e WhatsApp com DDD para continuar.");
+      return;
+    }
+    if (!privacyConsent) {
+      setError("Confirme o consentimento de privacidade para salvar seu contato.");
+      return;
+    }
+    setLoadingWhatsApp(true);
+    setError("");
+    try {
+      await captureLead("from-data-whatsapp");
+      const destination = (process.env.NEXT_PUBLIC_FROM_DATA_WHATSAPP_NUMBER || "").replace(/\D/g, "");
+      const message = encodeURIComponent(`Olá, Diego! Sou ${name.trim()} e conheci a FROM DATA. Quero entender a mentoria e encontrar um horário para a brief call.`);
+      if (destination) {
+        window.location.href = `https://wa.me/${destination}?text=${message}`;
+        return;
+      }
+      setWhatsAppSaved(true);
+      setLoadingWhatsApp(false);
+    } catch {
+      setError("Não foi possível salvar seu contato agora. Tente novamente em instantes.");
+      setLoadingWhatsApp(false);
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedSlot) {
@@ -89,6 +130,13 @@ export default function FromDataBookingPage() {
     }
     setLoading(true);
     setError("");
+    try {
+      await captureLead("from-data-booking");
+    } catch {
+      setError("Não foi possível salvar seu contato agora. Tente novamente em instantes.");
+      setLoading(false);
+      return;
+    }
     const supabase = createSupabaseBrowserClient();
     const { error: bookingError } = await supabase.rpc("request_from_data_brief_call", {
       p_name: name,
@@ -112,7 +160,10 @@ export default function FromDataBookingPage() {
 
   return <main className="fd-booking-page">
     <section className="fd-booking-context">
-      <Link href="/from-data"><Image src="/from-data-wordmark.png" alt="FROM DATA" width={811} height={281} priority unoptimized /></Link>
+      <div className="fd-booking-navigation">
+        <Link href="/from-data" aria-label="Voltar para a página FROM DATA"><Image src="/from-data-wordmark.png" alt="FROM DATA" width={811} height={281} priority unoptimized /></Link>
+        <Link className="fd-booking-back" href="/from-data">← Voltar para a página</Link>
+      </div>
       <div><span>BRIEF CALL · 30 MINUTOS</span><h1>Antes da call,<br />começamos pelo seu <em>FROM.</em></h1><p>Estas respostas ajudam Diego a chegar à conversa entendendo seu momento e a preparar uma primeira hipótese de plano.</p></div>
       <ol><li><span>01</span>Você escolhe um horário realmente livre</li><li><span>02</span>A call aprofunda o diagnóstico</li><li><span>03</span>Diego revisa o plano sugerido</li></ol>
       <small>Seus dados não são vendidos. A IA só processa o briefing com consentimento explícito.</small>
@@ -131,6 +182,7 @@ export default function FromDataBookingPage() {
         <div className="fd-booking-grid">
           <label><span>Nome completo</span><input value={name} onChange={(event) => setName(event.target.value)} required /></label>
           <label><span>E-mail</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+          <label><span>WhatsApp com DDD</span><input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="(11) 99999-9999" required /></label>
           <label><span>Cargo ou momento atual</span><input value={role} onChange={(event) => setRole(event.target.value)} placeholder="Ex.: Analista de BI" /></label>
           <label><span>Experiência</span><select value={level} onChange={(event) => setLevel(event.target.value)}><option>Transição de carreira</option><option>Iniciante</option><option>Júnior</option><option>Pleno</option></select></label>
           <label className="full"><span>Qual é o seu objetivo de carreira?</span><textarea value={goal} onChange={(event) => setGoal(event.target.value)} minLength={10} required /></label>
@@ -140,8 +192,13 @@ export default function FromDataBookingPage() {
         <label className="fd-consent"><input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} /><span>Autorizo o uso do briefing para gerar uma sugestão de plano com IA. O conteúdo só será compartilhado após revisão humana.</span></label>
         <label className="fd-consent"><input type="checkbox" checked={privacyConsent} onChange={(event) => setPrivacyConsent(event.target.checked)} /><span>Li e concordo com o tratamento dos dados para organização da brief call e acompanhamento da mentoria.</span></label>
         {error && <div className="fd-booking-error" role="alert">{error}</div>}
-        <button type="submit" disabled={loading || !selectedSlot}>{loading ? "Enviando briefing..." : "Solicitar brief call →"}</button>
-        <small>Nenhuma cobrança é feita nesta etapa.</small>
+        {whatsAppSaved && <div className="fd-booking-whatsapp-success" role="status"><strong>Contato salvo.</strong><span>Você entrou no funil da FROM DATA. Diego pode continuar a conversa pelo WhatsApp informado, mesmo sem um horário escolhido.</span></div>}
+        <div className="fd-booking-actions">
+          <button className="fd-booking-submit" type="submit" disabled={loading || loadingWhatsApp || !selectedSlot}>{loading ? "Enviando briefing..." : "Agendar brief call →"}</button>
+          <span>ou</span>
+          <button className="fd-whatsapp-cta" type="button" onClick={continueOnWhatsApp} disabled={loading || loadingWhatsApp}>{loadingWhatsApp ? "Salvando seu contato..." : "Prefiro continuar pelo WhatsApp"}</button>
+        </div>
+        <small>Seu contato fica salvo mesmo se você preferir agendar depois. Nenhuma cobrança é feita nesta etapa.</small>
       </form>}
     </section>
   </main>;

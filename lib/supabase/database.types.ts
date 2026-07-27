@@ -1893,6 +1893,15 @@ export type Database = {
         }
         Returns: string
       }
+      capture_from_data_lead: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_phone: string
+          p_source: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "finance" | "mentor" | "support" | "student"

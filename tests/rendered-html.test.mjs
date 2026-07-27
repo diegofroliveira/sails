@@ -80,5 +80,8 @@ test("server-renders the FROM DATA booking briefing", async () => {
   assert.doesNotMatch(html, /from-data-logo\.png/);
   assert.match(html, /Escolha um hor/);
   assert.match(html, /Consultando agenda/);
-  assert.match(html, /Solicitar brief call/);
+  assert.match(html, /Agendar brief call/);
+  assert.match(html, /Voltar para a página/);
+  assert.match(html, /Prefiro continuar pelo WhatsApp/);
+  assert.match(html, /WhatsApp com DDD/);
 });
