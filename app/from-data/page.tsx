@@ -47,7 +47,7 @@ export default function FromDataPage() {
     <div className="from-data-site">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <header className="fd-site-header">
-        <Link href="/from-data" aria-label="FROM DATA — início"><Image src="/from-data-logo.png" alt="FROM DATA" width={150} height={150} priority unoptimized /></Link>
+        <Link href="/from-data" aria-label="FROM DATA — início"><Image src="/from-data-wordmark.png" alt="FROM DATA" width={811} height={281} priority unoptimized /></Link>
         <nav><a href="#experiencia">Experiência</a><a href="#metodo">Método</a><a href="#jornada">Jornada</a><a href="#para-quem">Para quem</a></nav>
         <Link className="fd-outline-cta" href="/from-data/agendar">Agendar brief call</Link>
       </header>

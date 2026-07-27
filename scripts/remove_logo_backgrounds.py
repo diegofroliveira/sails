@@ -134,8 +134,40 @@ def build_norte_energia_dark() -> None:
     source.save(BRANDS / "norte-energia-dark.png", optimize=True)
 
 
+def make_from_data_wordmark_transparent() -> None:
+    path = ROOT / "public" / "from-data-wordmark.png"
+    image = Image.open(path).convert("RGBA")
+    pixels = image.load()
+    width, height = image.size
+    queue: deque[tuple[int, int]] = deque()
+    visited: set[tuple[int, int]] = set()
+    for x in range(width):
+        queue.extend(((x, 0), (x, height - 1)))
+    for y in range(height):
+        queue.extend(((0, y), (width - 1, y)))
+
+    def is_dark_canvas(x: int, y: int) -> bool:
+        red, green, blue, alpha = pixels[x, y]
+        return alpha == 0 or max(red, green, blue) <= 34
+
+    while queue:
+        x, y = queue.popleft()
+        if (x, y) in visited or not is_dark_canvas(x, y):
+            continue
+        visited.add((x, y))
+        red, green, blue, _ = pixels[x, y]
+        pixels[x, y] = (red, green, blue, 0)
+        for nx in range(max(0, x - 1), min(width, x + 2)):
+            for ny in range(max(0, y - 1), min(height, y + 2)):
+                if (nx, ny) not in visited:
+                    queue.append((nx, ny))
+
+    image.save(path, optimize=True)
+
+
 for source_name, destination_name in LOGOS.items():
     remove_border_background(BRANDS / source_name, BRANDS / destination_name)
 
 refine_pague_menos()
 build_norte_energia_dark()
+make_from_data_wordmark_transparent()
