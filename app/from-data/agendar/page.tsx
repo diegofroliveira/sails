@@ -112,7 +112,7 @@ export default function FromDataBookingPage() {
 
   return <main className="fd-booking-page">
     <section className="fd-booking-context">
-      <Link href="/from-data"><Image src="/from-data-logo.png" alt="FROM DATA" width={180} height={180} priority unoptimized /></Link>
+      <Link href="/from-data"><Image src="/from-data-wordmark.png" alt="FROM DATA" width={811} height={281} priority unoptimized /></Link>
       <div><span>BRIEF CALL · 30 MINUTOS</span><h1>Antes da call,<br />começamos pelo seu <em>FROM.</em></h1><p>Estas respostas ajudam Diego a chegar à conversa entendendo seu momento e a preparar uma primeira hipótese de plano.</p></div>
       <ol><li><span>01</span>Você escolhe um horário realmente livre</li><li><span>02</span>A call aprofunda o diagnóstico</li><li><span>03</span>Diego revisa o plano sugerido</li></ol>
       <small>Seus dados não são vendidos. A IA só processa o briefing com consentimento explícito.</small>

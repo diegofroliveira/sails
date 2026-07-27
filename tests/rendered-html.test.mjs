@@ -64,6 +64,8 @@ test("server-renders the FROM DATA landing page", async () => {
   assert.match(html, /anteriormente LTM/);
   assert.doesNotMatch(html, /LTM Fidelidade/);
   assert.match(html, /Banco do Brasil/);
+  assert.match(html, /from-data-wordmark\.png/);
+  assert.doesNotMatch(html, /from-data-logo\.png/);
   assert.match(html, /href="\/from-data\/agendar"/);
 });
 
@@ -74,6 +76,8 @@ test("server-renders the FROM DATA booking briefing", async () => {
   const html = await response.text();
   assert.match(html, /BRIEF CALL/i);
   assert.match(html, /Conte sobre o seu momento/);
+  assert.match(html, /from-data-wordmark\.png/);
+  assert.doesNotMatch(html, /from-data-logo\.png/);
   assert.match(html, /Escolha um hor/);
   assert.match(html, /Consultando agenda/);
   assert.match(html, /Solicitar brief call/);

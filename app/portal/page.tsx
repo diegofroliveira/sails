@@ -457,7 +457,7 @@ export default function Home() {
         <div className="sidebar-foot">
           <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={theme === "light" ? "Ativar modo noturno" : "Ativar modo claro"}><span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span><span>{theme === "light" ? "Modo noturno" : "Modo claro"}</span></button>
           <Link className="site-link" href="/">↗ <span>Ver landing page</span></Link>
-          <div className="tenant"><Image className="tenant-logo" src="/from-data-logo.png" alt="" width={30} height={30} unoptimized /><span><strong>{brandSettings.mentorshipName}</strong><small>Diego · cliente-piloto</small></span></div>
+          <div className="tenant"><Image className="tenant-logo" src="/from-data-wordmark.png" alt="" width={811} height={281} unoptimized /><span><strong>{brandSettings.mentorshipName}</strong><small>Diego · cliente-piloto</small></span></div>
           <button className="signout-link" onClick={signOut}>Sair da conta</button>
           <button className="reset-link" onClick={resetDemo}>Reiniciar demonstração</button>
         </div>
@@ -799,7 +799,7 @@ export default function Home() {
                 <aside className="branding-side">
                   <section className="operations-card brand-preview" style={{ "--preview-brand": brandDraft.primaryColor } as CSSProperties}>
                     <div className="preview-browser"><i /><i /><i /><span>{brandDraft.customDomain}</span></div>
-                    <div className="preview-portal"><header><Image className="preview-logo-image" src="/from-data-logo.png" alt="" width={34} height={34} unoptimized /><strong>{brandDraft.portalName || "Sua mentoria"}</strong></header><main><span>BOAS-VINDAS À SUA JORNADA</span><h3>Olá, Marina.</h3><p>{brandDraft.tagline || "Sua transformação começa aqui."}</p><button>Continuar aprendendo →</button><div><article><small>PROGRESSO</small><strong>48%</strong></article><article><small>PRÓXIMO ENCONTRO</small><strong>23 jul · 19h</strong></article></div></main>{!brandDraft.hideSailsBranding && <footer>Powered by Sails</footer>}</div>
+                    <div className="preview-portal"><header><Image className="preview-logo-image" src="/from-data-wordmark.png" alt="" width={811} height={281} unoptimized /><strong>{brandDraft.portalName || "Sua mentoria"}</strong></header><main><span>BOAS-VINDAS À SUA JORNADA</span><h3>Olá, Marina.</h3><p>{brandDraft.tagline || "Sua transformação começa aqui."}</p><button>Continuar aprendendo →</button><div><article><small>PROGRESSO</small><strong>48%</strong></article><article><small>PRÓXIMO ENCONTRO</small><strong>23 jul · 19h</strong></article></div></main>{!brandDraft.hideSailsBranding && <footer>Powered by Sails</footer>}</div>
                   </section>
                   <section className="operations-card addon-checklist"><span className="section-kicker">Incluído no adicional</span><h2>Pacote de personalização</h2><ul><li><span>✓</span>Identidade visual e portal</li><li><span>✓</span>Domínio personalizado</li><li><span>✓</span>E-mails com sua marca</li><li><span>✓</span>Certificados e páginas públicas</li><li><span>✓</span>White-label opcional</li></ul><small>Domínio e e-mail dependem de validação técnica antes do go-live.</small></section>
                 </aside>

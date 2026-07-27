@@ -34,7 +34,7 @@ export default function LoginPage() {
         <Link href="/" className="fd-back">← Voltar para Sails</Link>
         <div className="fd-brand-copy">
           <span className="fd-code-label">SELECT career FROM data;</span>
-          <Image src="/from-data-logo.png" alt="FROM DATA" width={560} height={560} priority unoptimized />
+          <Image src="/from-data-wordmark.png" alt="FROM DATA" width={811} height={281} priority unoptimized />
           <p>Every career starts with a FROM.</p>
         </div>
         <small>Ambiente piloto · Powered by Sails</small>
