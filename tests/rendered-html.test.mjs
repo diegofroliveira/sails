@@ -68,5 +68,7 @@ test("server-renders the FROM DATA booking briefing", async () => {
   const html = await response.text();
   assert.match(html, /BRIEF CALL/i);
   assert.match(html, /Conte sobre o seu momento/);
+  assert.match(html, /Horário disponível/);
+  assert.match(html, /Consultando agenda/);
   assert.match(html, /Solicitar brief call/);
 });

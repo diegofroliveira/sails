@@ -1552,6 +1552,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_from_data_available_slots: {
+        Args: { p_date: string }
+        Returns: {
+          ends_at: string
+          starts_at: string
+        }[]
+      }
       has_org_role: {
         Args: {
           allowed_roles?: Database["public"]["Enums"]["app_role"][]
