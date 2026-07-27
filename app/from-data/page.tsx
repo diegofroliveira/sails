@@ -33,7 +33,7 @@ const caseBrands = [
   { name: "Postal Saúde", image: "/brands/postal-saude.png", darkMark: true },
   { name: "Correios", image: "/brands/correios.svg" },
   { name: "Livelo", image: "/brands/livelo.svg" },
-  { name: "Norte Energia", image: "/brands/norte-energia.png", darkMark: true },
+  { name: "Norte Energia", image: "/brands/norte-energia-dark.png" },
   { name: "Vivo Fintech", image: "/brands/vivo.svg" },
   { name: "Mondelēz", image: "/brands/mondelez.jpg" },
   { name: "Vivo Telefônica", image: "/brands/telefonica.svg" },
