@@ -27,19 +27,16 @@ const structuredData = {
   founder: { "@type": "Person", name: "Diego Oliveira" },
 };
 
-const careerCompanies = [
+const caseBrands = [
   { name: "MTE", detail: "Ministério do Trabalho e Emprego" },
-  { name: "LTM", detail: "LTM Fidelidade" },
+  { name: "LTM Fidelidade", detail: "LTM" },
   { name: "Postal Saúde", image: "/brands/postal-saude.png" },
   { name: "Correios", image: "/brands/correios.svg" },
   { name: "Livelo", image: "/brands/livelo.svg" },
-  { name: "Norte Energia", detail: "Norte Energia" },
+  { name: "Norte Energia" },
   { name: "Vivo Fintech", image: "/brands/vivo.svg" },
   { name: "Mondelēz", image: "/brands/mondelez.jpg" },
   { name: "Vivo Telefônica", image: "/brands/telefonica.svg" },
-];
-
-const projectCompanies = [
   { name: "Banco do Brasil", image: "/brands/banco-do-brasil.svg" },
   { name: "Stanley", image: "/brands/stanley.png" },
   { name: "Pague Menos", image: "/brands/pague-menos.svg" },
@@ -77,16 +74,9 @@ export default function FromDataPage() {
         </section>
 
         <section className="fd-company-proof" aria-labelledby="company-proof-title">
-          <div className="fd-company-head"><span className="fd-kicker">REPERTÓRIO DE MERCADO</span><h2 id="company-proof-title">Experiência construída<br />em diferentes contextos.</h2><p>Organizações onde atuei profissionalmente e marcas atendidas em projetos. Cada contexto trouxe problemas, escalas e aprendizados diferentes.</p></div>
-          <div className="fd-company-group">
-            <div className="fd-company-label"><span>01</span><div><strong>Experiência profissional</strong><small>Empresas e organizações onde atuei</small></div></div>
-            <div className="fd-logo-wall">{careerCompanies.map((company) => <article key={company.name}>{company.image ? <Image src={company.image} alt={`Logo ${company.name}`} width={180} height={70} /> : <div className="fd-text-mark"><strong>{company.name}</strong><small>{company.detail}</small></div>}</article>)}</div>
-          </div>
-          <div className="fd-company-group projects">
-            <div className="fd-company-label"><span>02</span><div><strong>Projetos e atuações pontuais</strong><small>Marcas atendidas em trabalhos específicos</small></div></div>
-            <div className="fd-logo-wall project-logos">{projectCompanies.map((company) => <article key={company.name}><Image src={company.image} alt={`Logo ${company.name}`} width={180} height={70} /></article>)}</div>
-          </div>
-          <small className="fd-trademark-note">As marcas e logotipos pertencem aos seus respectivos titulares. A menção indica contexto de experiência profissional ou atuação em projetos, não vínculo comercial atual com a FROM DATA.</small>
+          <div className="fd-company-head"><span className="fd-kicker">CASES QUE FORMARAM MEU REPERTÓRIO</span><h2 id="company-proof-title">Problemas reais.<br />Contextos diferentes.<br />Direção que funciona.</h2><p>Você não está comprando acesso a logos. Está encurtando caminho com padrões, decisões e aprendizados construídos em cases de diferentes mercados e escalas.</p></div>
+          <div className="fd-logo-wall fd-case-wall">{caseBrands.map((company) => <article key={company.name}>{company.image ? <Image src={company.image} alt="" aria-hidden="true" width={190} height={72} unoptimized /> : <div className="fd-text-mark"><strong>{company.detail || company.name}</strong></div>}<span className="fd-brand-name">{company.name}</span></article>)}</div>
+          <p className="fd-case-closing">É esse repertório que entra na sala com você: menos teoria solta, mais leitura de contexto para escolher o próximo passo.</p>
         </section>
 
         <section className="fd-method" id="metodo">
