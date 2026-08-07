@@ -260,6 +260,9 @@ export default function Home() {
   const [operationsMode, setOperationsMode] = useState<OperationsMode>("finance");
   const [brandSettings, setBrandSettings] = useState<BrandSettings>(defaultBrandSettings);
   const [brandDraft, setBrandDraft] = useState<BrandSettings>(defaultBrandSettings);
+  const [brandAddonStatus, setBrandAddonStatus] = useState<string>("unavailable");
+  const [brandCanEdit, setBrandCanEdit] = useState(false);
+  const [brandSaving, setBrandSaving] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -312,18 +315,24 @@ export default function Home() {
   }, [toast]);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("sails-pilot-branding");
-    if (!stored) return;
-    try {
-      const saved = { ...defaultBrandSettings, ...JSON.parse(stored) } as BrandSettings;
-      const timer = window.setTimeout(() => {
-        setBrandSettings(saved);
-        setBrandDraft(saved);
-      }, 0);
-      return () => window.clearTimeout(timer);
-    } catch {
-      window.localStorage.removeItem("sails-pilot-branding");
-    }
+    let cancelled = false;
+    type BrandingResponse = { addonStatus?: string; role?: string; branding?: Partial<BrandSettings> | null };
+    void fetch("/api/branding")
+      .then((response) => (response.ok ? (response.json() as Promise<BrandingResponse>) : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setBrandAddonStatus(data.addonStatus ?? "unavailable");
+        setBrandCanEdit(data.role === "owner" || data.role === "admin");
+        if (data.branding) {
+          const loaded = { ...defaultBrandSettings, ...data.branding } as BrandSettings;
+          setBrandSettings(loaded);
+          setBrandDraft(loaded);
+        }
+      })
+      .catch(() => {
+        // Mantém os valores padrão locais se a personalização não puder ser carregada.
+      });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -384,23 +393,38 @@ export default function Home() {
     setMarketingMode("pipeline");
     setLeadQuery("");
     setOperationsMode("finance");
-    setBrandSettings(defaultBrandSettings);
-    setBrandDraft(defaultBrandSettings);
-    window.localStorage.removeItem("sails-pilot-branding");
     setToast("Demonstração reiniciada.");
   }
 
+  async function persistBranding(next: BrandSettings, successMessage: string) {
+    setBrandSaving(true);
+    try {
+      const response = await fetch("/api/branding", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({} as { error?: string })) as { error?: string };
+        setToast(body.error || "Não foi possível salvar a personalização.");
+        return;
+      }
+      setBrandSettings(next);
+      setBrandDraft(next);
+      setToast(successMessage);
+    } catch {
+      setToast("Não foi possível salvar a personalização. Tente novamente.");
+    } finally {
+      setBrandSaving(false);
+    }
+  }
+
   function saveBranding() {
-    setBrandSettings(brandDraft);
-    window.localStorage.setItem("sails-pilot-branding", JSON.stringify(brandDraft));
-    setToast("Personalização salva para o seu piloto.");
+    void persistBranding(brandDraft, "Personalização salva.");
   }
 
   function resetBranding() {
-    setBrandDraft(defaultBrandSettings);
-    setBrandSettings(defaultBrandSettings);
-    window.localStorage.removeItem("sails-pilot-branding");
-    setToast("Identidade do piloto restaurada.");
+    void persistBranding(defaultBrandSettings, "Identidade padrão do Sails restaurada.");
   }
 
   async function signOut() {
@@ -783,18 +807,19 @@ export default function Home() {
 
               {operationsMode === "branding" && <div className="branding-layout">
                 <section className="operations-card branding-editor">
-                  <div className="operations-card-head"><div><span className="section-kicker">Sails Signature · adicional premium</span><h2>Personalize a experiência do aluno</h2><p>Logo, cores, domínio e comunicação com a identidade da sua mentoria.</p></div><span className="pilot-badge">PILOTO ATIVO</span></div>
+                  <div className="operations-card-head"><div><span className="section-kicker">Sails Signature · adicional premium</span><h2>Personalize a experiência do aluno</h2><p>Logo, cores, domínio e comunicação com a identidade da sua mentoria.</p></div><span className="pilot-badge">{brandAddonStatus === "active" ? "ADICIONAL ATIVO" : brandAddonStatus === "trial" ? "EM TESTE" : "INDISPONÍVEL"}</span></div>
                   <div className="branding-offer"><div><span>ADICIONAL SUGERIDO</span><strong>R$ 149/mês</strong><small>+ R$ 490 de implantação</small></div><p>Para o seu ambiente de teste, o adicional está em <strong>cortesia de piloto</strong>. Os valores ficam editáveis na proposta comercial.</p></div>
+                  {!brandCanEdit && <div className="demo-data-note"><span>SOMENTE LEITURA</span><p>Apenas owner ou admin da organização podem alterar a personalização.</p></div>}
                   <div className="branding-form">
-                    <label><span>Nome da mentoria</span><input value={brandDraft.mentorshipName} onChange={(event) => setBrandDraft({ ...brandDraft, mentorshipName: event.target.value })} /></label>
-                    <label><span>Nome exibido no portal</span><input value={brandDraft.portalName} onChange={(event) => setBrandDraft({ ...brandDraft, portalName: event.target.value })} /></label>
-                    <label className="full"><span>Promessa principal</span><input value={brandDraft.tagline} onChange={(event) => setBrandDraft({ ...brandDraft, tagline: event.target.value })} /></label>
-                    <label><span>Cor principal</span><span className="color-input"><input type="color" value={brandDraft.primaryColor} onChange={(event) => setBrandDraft({ ...brandDraft, primaryColor: event.target.value })} /><input value={brandDraft.primaryColor} onChange={(event) => setBrandDraft({ ...brandDraft, primaryColor: event.target.value })} /></span></label>
-                    <label><span>Domínio desejado</span><input value={brandDraft.customDomain} onChange={(event) => setBrandDraft({ ...brandDraft, customDomain: event.target.value })} /></label>
-                    <label className="full"><span>Remetente dos e-mails</span><input value={brandDraft.emailSender} onChange={(event) => setBrandDraft({ ...brandDraft, emailSender: event.target.value })} /></label>
-                    <label className="branding-check full"><input type="checkbox" checked={brandDraft.hideSailsBranding} onChange={(event) => setBrandDraft({ ...brandDraft, hideSailsBranding: event.target.checked })} /><span><strong>White-label completo</strong><small>Ocultar “Powered by Sails” no portal do aluno.</small></span></label>
+                    <label><span>Nome da mentoria</span><input disabled={!brandCanEdit} value={brandDraft.mentorshipName} onChange={(event) => setBrandDraft({ ...brandDraft, mentorshipName: event.target.value })} /></label>
+                    <label><span>Nome exibido no portal</span><input disabled={!brandCanEdit} value={brandDraft.portalName} onChange={(event) => setBrandDraft({ ...brandDraft, portalName: event.target.value })} /></label>
+                    <label className="full"><span>Promessa principal</span><input disabled={!brandCanEdit} value={brandDraft.tagline} onChange={(event) => setBrandDraft({ ...brandDraft, tagline: event.target.value })} /></label>
+                    <label><span>Cor principal</span><span className="color-input"><input type="color" disabled={!brandCanEdit} value={brandDraft.primaryColor} onChange={(event) => setBrandDraft({ ...brandDraft, primaryColor: event.target.value })} /><input disabled={!brandCanEdit} value={brandDraft.primaryColor} onChange={(event) => setBrandDraft({ ...brandDraft, primaryColor: event.target.value })} /></span></label>
+                    <label><span>Domínio desejado</span><input disabled={!brandCanEdit} value={brandDraft.customDomain} onChange={(event) => setBrandDraft({ ...brandDraft, customDomain: event.target.value })} /></label>
+                    <label className="full"><span>Remetente dos e-mails</span><input disabled={!brandCanEdit} value={brandDraft.emailSender} onChange={(event) => setBrandDraft({ ...brandDraft, emailSender: event.target.value })} /></label>
+                    <label className="branding-check full"><input type="checkbox" disabled={!brandCanEdit} checked={brandDraft.hideSailsBranding} onChange={(event) => setBrandDraft({ ...brandDraft, hideSailsBranding: event.target.checked })} /><span><strong>White-label completo</strong><small>Ocultar “Powered by Sails” no portal do aluno.</small></span></label>
                   </div>
-                  <div className="branding-actions"><button className="button primary" onClick={saveBranding}>Salvar personalização</button><button className="button" onClick={resetBranding}>Restaurar piloto</button><small>As preferências deste piloto ficam salvas neste dispositivo.</small></div>
+                  <div className="branding-actions"><button className="button primary" disabled={!brandCanEdit || brandSaving} onClick={saveBranding}>{brandSaving ? "Salvando…" : "Salvar personalização"}</button><button className="button" disabled={!brandCanEdit || brandSaving} onClick={resetBranding}>Restaurar padrão Sails</button><small>Personalização salva na sua organização — vale para todos os administradores.</small></div>
                 </section>
                 <aside className="branding-side">
                   <section className="operations-card brand-preview" style={{ "--preview-brand": brandDraft.primaryColor } as CSSProperties}>

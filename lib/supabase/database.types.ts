@@ -1311,6 +1311,7 @@ export type Database = {
           favicon_url: string | null
           hide_sails_branding: boolean
           logo_url: string | null
+          mentorship_name: string | null
           organization_id: string
           portal_name: string
           primary_color: string
@@ -1326,6 +1327,7 @@ export type Database = {
           favicon_url?: string | null
           hide_sails_branding?: boolean
           logo_url?: string | null
+          mentorship_name?: string | null
           organization_id: string
           portal_name: string
           primary_color?: string
@@ -1341,6 +1343,7 @@ export type Database = {
           favicon_url?: string | null
           hide_sails_branding?: boolean
           logo_url?: string | null
+          mentorship_name?: string | null
           organization_id?: string
           portal_name?: string
           primary_color?: string
